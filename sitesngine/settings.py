@@ -45,6 +45,7 @@ TEMPLATE_DEBUG = True
 
 ALLOWED_HOSTS = [
     'sitesngine.megiteam.pl',
+    'www.sitesngine.megiteam.pl',
     'www.topparodies.com',
     'topparodies.com',
     'www.mobilebrand.pl',
@@ -167,6 +168,7 @@ SITES_DIR = os.path.join(os.path.dirname(__file__), '..', 'sites').replace('\\',
 SITES_PACKAGE = 'sites'
 DEFAULT_HOST = 'sitesngine.megiteam.pl'
 HOSTNAME_REDIRECTS = {
+    'sitesngine.megiteam.pl': 'www.sitesngine.megiteam.pl',
     'mobilebrand.pl': 'www.mobilebrand.pl',
 }
 #ENV_HOSTNAMES = {
