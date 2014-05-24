@@ -64,6 +64,7 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.comments',
     'sites.topparodies_com',
     'sites.mobilebrand_pl',
     'sitesngine.hosts',
@@ -72,6 +73,10 @@ INSTALLED_APPS = (
     'tagging',
     'sitesngine.pages',
     'tinymce',
+    'json_field',
+    'django_pygments',
+    'zinnia',
+    'django_xmlrpc',
     'parodies',
     'south',
 )
@@ -186,3 +191,6 @@ SITESNGINE_PAGE_TEMPLATES = (
 SITESNGINE_PAGE_TINYMCE = True
 
 ELFINDER_TINYMCE_PATH_TO_POPUP_JS = STATIC_URL + 'tiny_mce/tiny_mce_popup.js'
+
+from zinnia.xmlrpc import ZINNIA_XMLRPC_METHODS
+XMLRPC_METHODS = ZINNIA_XMLRPC_METHODS
