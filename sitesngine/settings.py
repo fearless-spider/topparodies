@@ -66,7 +66,7 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.comments',
-    #'sites.topparodies_com',
+    'sites.topparodies_com',
     'sites.mobilebrand_pl',
     'sitesngine.hosts',
     'mptt',
@@ -128,7 +128,7 @@ DATABASES = {
 
 LANGUAGE_CODE = 'pl'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Europe/Warsaw'
 
 USE_I18N = True
 
@@ -169,6 +169,7 @@ SITES_PACKAGE = 'sites'
 DEFAULT_HOST = 'sitesngine.megiteam.pl'
 HOSTNAME_REDIRECTS = {
     'mobilebrand.pl': 'www.mobilebrand.pl',
+    'topparodies.com': 'www.topparodies.com',
 }
 #ENV_HOSTNAMES = {
 #    'django':    'djangoaaa',
