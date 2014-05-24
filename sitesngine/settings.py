@@ -8,6 +8,25 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.6/ref/settings/
 """
 
+# This is defined here as a do-nothing function because we can't import
+# django.utils.translation -- that module depends on the settings.
+gettext_noop = lambda s: s
+
+# here is all the languages supported by the CMS
+SITESNGINE_PAGE_LANGUAGES = (
+    ('pl', gettext_noop('Polish')),
+    ('en-us', gettext_noop('US English')),
+)
+
+# copy PAGE_LANGUAGES
+languages = list(SITESNGINE_PAGE_LANGUAGES)
+
+# redefine the LANGUAGES setting in order to be sure to have the correct request.LANGUAGE_CODE
+LANGUAGES = languages
+
+SITESNGINE_PAGE_USE_SITE_ID = True
+SITE_ID = 1
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
@@ -24,7 +43,15 @@ DEBUG = True
 
 TEMPLATE_DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    'sitesngine.megiteam.pl',
+    'www.topparodies.com',
+    'topparodies.com',
+    'www.mobilebrand.pl',
+    'mobilebrand.pl',
+    'www.fearlessspider.com',
+    'fearlessspider.com',
+]
 
 
 # Application definition
@@ -33,25 +60,49 @@ INSTALLED_APPS = (
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
+    'django.contrib.sites',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'sites.fearlessspider_com',
+    'sitesngine.hosts',
+    'mptt',
+    'sitesngine.elfinder',
+    'tagging',
+    'sitesngine.pages',
+    'tinymce',
 )
 
 MIDDLEWARE_CLASSES = (
+    'sitesngine.hosts.middleware.HostsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'sitesngine.middleware.XForwardedForMiddleware',
+    'sitesngine.hosts.request.CurrentRequestMiddleware',
+    'sitesngine.hosts.middleware.AdminLoginInterfaceSelectorMiddleware',
+    'sitesngine.hosts.middleware.SitePermissionMiddleware',
 )
 
 ROOT_URLCONF = 'sitesngine.urls'
 
 WSGI_APPLICATION = 'sitesngine.wsgi.application'
 
+TEMPLATE_CONTEXT_PROCESSORS = (
+    "django.contrib.auth.context_processors.auth",
+    "django.core.context_processors.debug",
+    "django.core.context_processors.i18n",
+    "django.core.context_processors.media",
+    "django.core.context_processors.static",
+    "django.contrib.messages.context_processors.messages",
+    "django.core.context_processors.request",
+    "sitesngine.hosts.context_processors.current_site",
+    "sitesngine.pages.context_processors.media",
+)
 
 # Database
 # https://docs.djangoproject.com/en/1.6/ref/settings/#databases
@@ -102,3 +153,32 @@ else:
         DATABASES['default'] = dj_database_url.parse(url)
         if DATABASES['default'].get('PASSWORD'):
             DATABASES['default']['PASSWORD'] = unquote(DATABASES['default']['PASSWORD'])
+
+SITES_DIR = os.path.join(os.path.dirname(__file__), '..', 'sites').replace('\\','/')
+SITES_PACKAGE = 'sites'
+DEFAULT_HOST = 'sitesngine.megiteam.pl'
+HOSTNAME_REDIRECTS = {
+    #'example.com': 'www.example.com',
+}
+#ENV_HOSTNAMES = {
+#    'django':    'djangoaaa',
+#}
+#SITES_FILTER = {'domain__endswith':'.example.com'}
+
+FILE_UPLOAD_PERMISSIONS = 0644
+
+SITESNGINE_PAGE_DEFAULT_TEMPLATE = 'pages/index.html'
+
+SITESNGINE_PAGE_TAGGING = True
+
+SITESNGINE_PAGE_HIDE_SITES = True
+
+SITESNGINE_PAGE_TEMPLATES = (
+    ('pages/index.html', 'Simple'),
+    ('pages/page.html', 'Page'),
+    ('pages/contact.html', 'Contact'),
+)
+
+SITESNGINE_PAGE_TINYMCE = True
+
+ELFINDER_TINYMCE_PATH_TO_POPUP_JS = STATIC_URL + 'tiny_mce/tiny_mce_popup.js'
