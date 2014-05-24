@@ -24,7 +24,7 @@ urlpatterns = patterns('',
     url(r'^sitemap-(?P<section>.+)\.xml$', 'django.contrib.sitemaps.views.sitemap',
         {'sitemaps': sitemaps}),
     url(r'^tinymce/', include('tinymce.urls')),
-    url(r'^elfinder/', include('sitesngine.elfinder.urls')),
+    #url(r'^elfinder/', include('sitesngine.elfinder.urls')),
 )
 
 urlpatterns += patterns('',
