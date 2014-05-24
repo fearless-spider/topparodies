@@ -7,7 +7,6 @@ from django.core.urlresolvers import reverse
 from django.http import HttpResponse
 from parodies.models import Video
 from parodies.views import IndexView, PrivacyView, TermsView, VideoDetail, TodayVideoListView, ThisWeekVideoListView, ThisMonthVideoListView, GroupVideoListView, TopVideoListView, LatestVideoListView
-from phantom import admin_site
 
 class StaticViewSitemap(Sitemap):
     priority = 0.5
@@ -59,7 +58,6 @@ class GroupViewSitemap(Sitemap):
         return reverse('group_video', args=[item])
 
 admin.autodiscover()
-admin_site._registry.update(admin.site._registry)
 
 info_dict = {
     'queryset': Video.objects.exclude(slug=''),
