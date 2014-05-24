@@ -64,7 +64,7 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'sites.fearlessspider_com',
+#    'sites.fearlessspider_com',
     'sitesngine.hosts',
     'mptt',
     'sitesngine.elfinder',
