@@ -64,13 +64,16 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-#    'sites.fearlessspider_com',
+    'sites.topparodies_com',
+    'sites.mobilebrand_pl',
     'sitesngine.hosts',
     'mptt',
     'sitesngine.elfinder',
     'tagging',
     'sitesngine.pages',
     'tinymce',
+    'parodies',
+    'south',
 )
 
 MIDDLEWARE_CLASSES = (

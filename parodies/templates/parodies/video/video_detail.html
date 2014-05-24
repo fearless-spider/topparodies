@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% load parodies %}
+
+{% block og %}
+    <meta property="og:title" content="{{ object.title }}"/>
+    <meta property="og:type" content="video.movie"/>
+    <meta property="og:url" content="http://www.topparodies.com{% url 'video_detail' object.slug object.id %}"/>
+    <meta property="og:image" content="{{ object.thumb }}"/>
+    <meta property="og:site_name" content="TopParodies.com"/>
+    <meta property="fb:app_id" content="243664279094512"/>
+    <meta property="og:description" content="Home of the best parodies. Watch, comment, share and more!"/>
+{% endblock %}
+
+{% block extrahead %}
+    <script type="text/javascript" src="//assets.pinterest.com/js/pinit.js"></script>
+{% endblock %}
+
+{% block title %}
+{{ object.title }}
+{% endblock %}
+
+{% block description %}
+    {{ object.title }}
+{% endblock %}
+
+
+{% block content %}
+    <div class="row">
+        <div class="col-lg-12 col-sm-12 col-xs-12 col-md-12">
+            <h1>{{ object.title }}</h1>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-6 col-sm-6 col-xs-12 col-md-6">
+            {% render_video object %}
+        </div>
+        <div class="col-lg-6 col-sm-6 col-xs-12 col-md-6">
+            <a href="//www.pinterest.com/pin/create/button/?url=http://www.topparodies.com{% url 'video_detail' object.slug object.id %}&media={{ object.thumb }}&description={{ object.title }}" data-pin-do="buttonPin" data-pin-config="above"><img src="//assets.pinterest.com/images/pidgets/pinit_fg_en_rect_gray_20.png" /></a><br />
+            <a href="https://twitter.com/share" class="twitter-share-button" data-via="TopParodiesCom" data-size="large" data-related="TopParodiesCom" data-hashtags="topparodies">Tweet</a>
+<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');</script>
+            <!-- Place this tag where you want the +1 button to render. -->
+            <div class="g-plusone" data-annotation="inline" data-width="300"></div>
+
+            <!-- Place this tag after the last +1 button tag. -->
+            <script type="text/javascript">
+              (function() {
+                var po = document.createElement('script'); po.type = 'text/javascript'; po.async = true;
+                po.src = 'https://apis.google.com/js/plusone.js';
+                var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(po, s);
+              })();
+            </script>
+            <div class="fb-like" data-href="http://www.topparodies.com{% url 'video_detail' object.slug object.id %}" data-layout="standard" data-action="like" data-show-faces="true" data-share="true"></div><br />
+            <div class="fb-send" data-href="http://www.topparodies.com{% url 'video_detail' object.slug object.id %}" data-colorscheme="light"></div>
+            <div class="description">
+            {{ object.description }}
+            </div>
+            <script type="text/javascript" src="//www.adfreestyle.pl/show/gMMuPFGunTS"></script>
+            <div class="fb-comments" data-href="http://www.topparodies.com{% url 'video_detail' object.slug object.id %}" data-numposts="5" data-colorscheme="light"></div>
+        </div>
+    </div>
+{% endblock %}

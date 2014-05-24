@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block title %}
+{{ title }} parodies {% if request.GET.page %}{{ request.GET.page }}{% endif %}
+{% endblock %}
+
+{% block description %}
+{{ title }} parodies of Justin Bieber, Rihanna, Star Wars, Call of Duty, Minecraft, iPhone, Apple, Samsung, Google, Gangnam Style Parodies and more
+{% endblock %}
+
+{% block content %}
+        <div class="row">
+            <div class="col-lg-12 col-sm-12 col-xs-12 col-md-12">
+                <h2>{{ title }} parodies {% if request.GET.page %}{{ request.GET.page }}{% endif %}</h2>
+            </div>
+        </div>
+        <div class="row" id="items">
+        {% for item in object_list %}
+            {% if forloop.counter0|divisibleby:4 %}
+            <div class="col-lg-3 col-sm-6 col-xs-12 col-md-4 item">
+                <div class="well">
+                    <script type="text/javascript" src="//www.adfreestyle.pl/show/gMMuPFGunTS"></script>
+                </div>
+            </div>
+            {% endif %}
+            <div class="col-lg-3 col-sm-6 col-xs-12 col-md-4 item" itemscope itemtype="http://schema.org/VideoObject">
+                <div class="well">
+                    <a itemprop="url" href="{% url 'video_detail' item.slug item.id %}" class="thumbnail">
+                        <img src="{{ item.thumb }}" alt="{{ item.title }}">
+                    </a>
+                    <div class="caption">
+                        <h4 itemprop="caption">{{ item.title }}</h4>
+                        <a href="{% url 'video_detail' item.slug item.id %}" class="btn btn-info">View</a>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+        </div>
+
+        {% if is_paginated %}
+        <div class="pager well">
+            <ul>
+                {% if page_obj.has_previous %}
+                    <li><a href="?page={{ page_obj.previous_page_number }}">previous</a></li>
+                {% endif %}
+                <li>
+                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+                </li>
+                {% if page_obj.has_next %}
+                    <li><a href="?page={{ page_obj.next_page_number }}">next</a></li>
+                {% endif %}
+            </ul>
+        </div>
+        {% endif %}
+{% endblock %}
+
+{% block extrahead %}
+    <script>
+    $(window).load(
+        function() {
+            var container = document.querySelector('#items');
+            var msnry = new Masonry( container, {
+            // options
+            //columnWidth: 200,
+            itemSelector: '.item'
+        });
+    });
+    </script>
+{% endblock %}

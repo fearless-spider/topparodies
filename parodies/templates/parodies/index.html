@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block content %}
+        <div class="row">
+            <div class="col-lg-12 col-sm-12 col-xs-12 col-md-12">
+                <h2>Top parodies</h2>
+            </div>
+        </div>
+        <div class="row" id="top">
+        {% for item in top %}
+            {% if forloop.counter0|divisibleby:4 %}
+            <div class="col-lg-3 col-sm-6 col-xs-12 col-md-4 item">
+                <div class="well">
+                    <script type="text/javascript" src="//www.adfreestyle.pl/show/gMMuPFGunTS"></script>
+                </div>
+            </div>
+            {% endif %}
+            <div class="col-lg-3 col-sm-6 col-xs-12 col-md-4 item" itemscope itemtype="http://schema.org/VideoObject">
+                <div class="well">
+                    <a itemprop="url" href="{% url 'video_detail' item.slug item.id %}" class="thumbnail">
+                        <img src="{{ item.thumb }}" alt="{{ item.title }}">
+                    </a>
+                    <div class="caption">
+                        <h4 itemprop="caption">{{ item.title }}</h4>
+                        <a href="{% url 'video_detail' item.slug item.id %}" class="btn btn-info">View</a>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+            <div class="col-lg-3 col-sm-6 col-xs-12 col-md-4 item">
+                <div class="well">
+                    <a href="{% url 'top' %}" class="btn btn-success">More...</a>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-12 col-sm-12 col-xs-12 col-md-12">
+                <h2>Newest Parodies</h2>
+            </div>
+        </div>
+        <div class="row" id="newest">
+        {% for item in latest %}
+            {% if forloop.counter0|divisibleby:4 %}
+            <div class="col-lg-3 col-sm-6 col-xs-12 col-md-4 item">
+                <div class="well">
+                    <script type="text/javascript" src="//www.adfreestyle.pl/show/gMMuPFGunTS"></script>
+                </div>
+            </div>
+            {% endif %}
+            <div class="col-lg-3 col-sm-6 col-xs-12 col-md-4 item" itemscope itemtype="http://schema.org/VideoObject">
+                <div class="well">
+                    <a itemprop="url" href="{% url 'video_detail' item.slug item.id %}" class="thumbnail">
+                        <img src="{{ item.thumb }}" alt="{{ item.title }}">
+                    </a>
+                    <div class="caption">
+                        <h4 itemprop="caption">{{ item.title }}</h4>
+                        <a href="{% url 'video_detail' item.slug item.id %}" class="btn btn-info">View</a>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+            <div class="col-lg-3 col-sm-6 col-xs-12 col-md-4 item">
+                <div class="well">
+                    <a href="{% url 'latest' %}" class="btn btn-success">More...</a>
+                </div>
+            </div>
+        </div>
+{% endblock %}
+
+{% block extrahead %}
+    <script>
+    $(window).load(
+        function() {
+            var container = document.querySelector('#top');
+            var msnry = new Masonry( container, {
+            // options
+            //columnWidth: 200,
+            itemSelector: '.item'
+        });
+            var container2 = document.querySelector('#newest');
+            var msnry2 = new Masonry( container2, {
+            // options
+            //columnWidth: 200,
+            itemSelector: '.item'
+        });
+    });
+    </script>
+{% endblock %}
