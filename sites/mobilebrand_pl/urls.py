@@ -4,10 +4,8 @@ from django.conf.urls import patterns, include, url
 from django.contrib import admin
 from sitesngine.pages.views import MultiLanguagePageSitemap
 from zinnia.sitemaps import TagSitemap, EntrySitemap, AuthorSitemap, CategorySitemap
-from phantom import admin_site
 
 admin.autodiscover()
-admin_site._registry.update(admin.site._registry)
 
 sitemaps = {'tags': TagSitemap,
             'blog': EntrySitemap,
@@ -26,6 +24,6 @@ urlpatterns = patterns('',
     url(r'^sitemap-(?P<section>.+)\.xml$', 'django.contrib.sitemaps.views.sitemap',
         {'sitemaps': sitemaps}),
     url(r'^tinymce/', include('tinymce.urls')),
-    url(r'^elfinder/', include('elfinder.urls')),
+    url(r'^elfinder/', include('sitesngine.elfinder.urls')),
     url(r'^', include('sitesngine.pages.urls')),
 )
