@@ -25,5 +25,8 @@ urlpatterns = patterns('',
         {'sitemaps': sitemaps}),
     url(r'^tinymce/', include('tinymce.urls')),
     url(r'^elfinder/', include('sitesngine.elfinder.urls')),
+)
+
+urlpatterns += patterns('',
     url(r'^', include('sitesngine.pages.urls')),
 )
