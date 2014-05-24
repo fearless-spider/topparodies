@@ -89,4 +89,6 @@ urlpatterns = patterns('',
         {'sitemaps': sitemaps}),
     url(r'^xmlrpc/$', 'django_xmlrpc.views.handle_xmlrpc'),
     url(r'^blog/', include('zinnia.urls')),
+    #url(r'^elfinder/', include('sitesngine.elfinder.urls')),
+    url(r'^admin/', include(admin.site.urls)),
 )
