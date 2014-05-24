@@ -8,6 +8,10 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.6/ref/settings/
 """
 
+# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
+import os
+BASE_DIR = os.path.dirname(os.path.dirname(__file__))
+
 # This is defined here as a do-nothing function because we can't import
 # django.utils.translation -- that module depends on the settings.
 gettext_noop = lambda s: s
@@ -26,10 +30,6 @@ LANGUAGES = languages
 
 SITESNGINE_PAGE_USE_SITE_ID = True
 SITE_ID = 1
-
-# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-import os
-BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
 
 # Quick-start development settings - unsuitable for production
