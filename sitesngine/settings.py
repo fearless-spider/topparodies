@@ -134,6 +134,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.6/howto/static-files/
 
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 STATIC_URL = '/static/'
 import os
 import os.path
@@ -161,7 +162,7 @@ SITES_DIR = os.path.join(os.path.dirname(__file__), '..', 'sites').replace('\\',
 SITES_PACKAGE = 'sites'
 DEFAULT_HOST = 'sitesngine.megiteam.pl'
 HOSTNAME_REDIRECTS = {
-    #'example.com': 'www.example.com',
+    'mobilebrand.pl': 'www.mobilebrand.pl',
 }
 #ENV_HOSTNAMES = {
 #    'django':    'djangoaaa',
