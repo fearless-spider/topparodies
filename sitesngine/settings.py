@@ -66,7 +66,7 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.comments',
-    'sites.topparodies_com',
+    #'sites.topparodies_com',
     'sites.mobilebrand_pl',
     'sitesngine.hosts',
     'mptt',
