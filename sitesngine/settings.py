@@ -80,3 +80,24 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.6/howto/static-files/
 
 STATIC_URL = '/static/'
+import os
+import os.path
+
+try:
+    import dj_database_url
+    try: # python 2.x
+        from urllib import unquote
+    except ImportError: # python 3.x
+        from urllib.parse import unquote
+except ImportError:
+    pass
+else:
+    try:
+        with open(os.environ['DATABASE_PATH_SITESNGINE'], 'r') as url_file:
+            url = url_file.read()
+    except (IOError, KeyError):
+        pass
+    else:
+        DATABASES['default'] = dj_database_url.parse(url)
+        if DATABASES['default'].get('PASSWORD'):
+            DATABASES['default']['PASSWORD'] = unquote(DATABASES['default']['PASSWORD'])
