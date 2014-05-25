@@ -7,15 +7,14 @@ import shlex
 import traceback
 
 PATH_TO_HERE = os.path.abspath(os.path.dirname(__file__))
-sys.path.append(os.path.join('../',PATH_TO_HERE))
 os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
 
 from django.conf import settings
 
 
 def compress_statics():
-    out_paths = (os.path.join(PATH_TO_HERE, 'static/css'),
-                 os.path.join(PATH_TO_HERE, 'static/js/min'))
+    out_paths = (os.path.join(PATH_TO_HERE, '../static/css'),
+                 os.path.join(PATH_TO_HERE, '../static/js/min'))
 
     try:
         for path in out_paths:
@@ -29,8 +28,8 @@ def compress_statics():
 
 
 def compress_styles():
-    less_path = os.path.join(PATH_TO_HERE, 'static/less/styles.less')
-    css_path = os.path.join(PATH_TO_HERE, 'static/css/')
+    less_path = os.path.join(PATH_TO_HERE, '../static/less/styles.less')
+    css_path = os.path.join(PATH_TO_HERE, '../static/css/')
 
     try:
         subprocess.check_call(shlex.split('lessc {0} {1}styles-{2}.min.css -yui-compress'
@@ -103,18 +102,18 @@ def compress_js():
 
     combined = ''
     for js in js_files:
-        with open(os.path.join(PATH_TO_HERE, 'static/js/' + js), 'r') as f:
+        with open(os.path.join(PATH_TO_HERE, '../static/js/' + js), 'r') as f:
             combined += f.read()
 
-    with open(os.path.join(PATH_TO_HERE, 'static/js/combined.js'), 'w') as f:
+    with open(os.path.join(PATH_TO_HERE, '../static/js/combined.js'), 'w') as f:
         f.write(combined)
 
     try:
         subprocess.check_call(shlex.split('uglifyjs -o {0}scripts-{1}.min.js {2}'.format(
-            os.path.join(PATH_TO_HERE, 'static/js/min/'),
+            os.path.join(PATH_TO_HERE, '../static/js/min/'),
             settings.COMPRESS_REVISION_NUMBER,
-            os.path.join(PATH_TO_HERE, 'static/js/combined.js'))))
-        os.remove(os.path.join(PATH_TO_HERE, 'static/js/combined.js'))
+            os.path.join(PATH_TO_HERE, '../static/js/combined.js'))))
+        os.remove(os.path.join(PATH_TO_HERE, '../static/js/combined.js'))
         print 'JavaScript Combined and Minified: scripts-{0}.min.js'.format(settings.COMPRESS_REVISION_NUMBER)
     except Exception:
         exc_type, exc_value, exc_traceback = sys.exc_info()
