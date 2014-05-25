@@ -71,6 +71,7 @@ INSTALLED_APPS = (
     'sites.topparodies_com',
     'sites.mobilebrand_pl',
     'sites.djangostdio_com',
+    'sites.fearlessspider_com',
     'sitesngine.hosts',
     'mptt',
     'sitesngine.elfinder',
@@ -82,6 +83,7 @@ INSTALLED_APPS = (
     'zinnia',
     'django_xmlrpc',
     'parodies',
+    'syte',
     'south',
 )
 
