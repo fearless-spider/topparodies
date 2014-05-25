@@ -136,10 +136,10 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-        'OPTIONS': {
+    },
+    'OPTIONS': {
         'init_command': ("SET time_zone='%s'" % TIME_ZONE),
-        },
-    }
+    },
 }
 
 # Static files (CSS, JavaScript, Images)
