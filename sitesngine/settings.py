@@ -217,6 +217,10 @@ TUMBLR_BLOG_URL = 'fearlessspider.tumblr.com'
 TUMBLR_API_URL = 'http://api.tumblr.com/v2/blog/{0}'.format(TUMBLR_BLOG_URL)
 TUMBLR_API_KEY = 'rDjHObC8MGIN4HnpYyQhEkEMowLD9Lby0uRPZGUTVCabLhX910'
 
+#Blog Integration: Wordpress
+WORDPRESS_BLOG_URL = '[ENTER WORDPRESS BLOG URL] ex. gordonkoo.wordpress.com'
+WORDPRESS_API_URL = 'https://public-api.wordpress.com/rest/v1/sites/{0}'.format(WORDPRESS_BLOG_URL)
+
 #Tent.io Integration
 TENT_INTEGRATION_ENABLED = False
 TENT_ENTITY_URI = '[ENTER YOUR ENTITY URI HERE] ex. https://yourname.tent.is'
