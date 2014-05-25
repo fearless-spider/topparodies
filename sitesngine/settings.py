@@ -138,7 +138,8 @@ DATABASES = {
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     },
     'OPTIONS': {
-        'init_command': ("SET time_zone='%s'" % TIME_ZONE),
+        'timezone': 'UTC',
+        'client_encoding': 'UTF8',
     },
 }
 
