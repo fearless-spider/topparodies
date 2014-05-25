@@ -4,11 +4,6 @@
 import os
 import sys
 import requests
-import math
-
-PATH_TO_HERE = os.path.abspath(os.path.dirname(__file__))
-sys.path.append(os.path.join(PATH_TO_HERE, '..'))
-os.environ['DJANGO_SETTINGS_MODULE'] = 'syte.settings'
 
 from django.conf import settings
 from datetime import datetime
@@ -39,7 +34,7 @@ def generate_sitemap():
 
 	sitemap += '</urlset>'
 
-	with open(os.path.join(PATH_TO_HERE, 'templates/sitemap.xml'), 'w') as f:
+	with open('templates/sitemap.xml', 'w') as f:
 		f.write(sitemap)
 
 	print 'Done generating sitemap'
