@@ -8,11 +8,7 @@ admin.autodiscover()
 #admin.site._registry.update(admin.site._registry)
 
 urlpatterns = patterns('',
-    url(r'^i18n/', include('django.conf.urls.i18n')),
     url(r'^', include('syte.urls')),
-    url(r'^comments/', include('django.contrib.comments.urls')),
+    url(r'^i18n/', include('django.conf.urls.i18n')),
     url(r'^admin/', include(admin.site.urls)),
-    url(r'^tinymce/', include('tinymce.urls')),
-    url(r'^elfinder/', include('sitesngine.elfinder.urls')),
-    url(r'^', include('sitesngine.pages.urls')),
 )
