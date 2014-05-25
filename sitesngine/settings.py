@@ -116,6 +116,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     "django.core.context_processors.request",
     "sitesngine.hosts.context_processors.current_site",
     "sitesngine.pages.context_processors.media",
+    "syte.context_processor.site_pages",
 )
 
 # Internationalization
@@ -233,3 +234,4 @@ STACKOVERFLOW_INTEGRATION_ENABLED = False
 FLICKR_INTEGRATION_ENABLED = False
 LINKEDIN_INTEGRATION_ENABLED = True
 SITEMAP_ENABLED = True
+SITE_ROOT_URI = 'http://www.fearlessspider.com'
