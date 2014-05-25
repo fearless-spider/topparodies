@@ -82,7 +82,7 @@ INSTALLED_APPS = (
     'zinnia',
     'django_xmlrpc',
     'parodies',
-    'south',
+    #'south',
 )
 
 MIDDLEWARE_CLASSES = (
