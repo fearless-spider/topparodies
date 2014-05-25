@@ -8,6 +8,7 @@ import traceback
 
 PATH_TO_HERE = os.path.abspath(os.path.dirname(__file__))
 sys.path.append(os.path.join(PATH_TO_HERE, '..'))
+os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
 
 from django.conf import settings
 
