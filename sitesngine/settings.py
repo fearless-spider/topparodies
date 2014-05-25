@@ -165,9 +165,6 @@ else:
         DATABASES['default'] = dj_database_url.parse(url)
         if DATABASES['default'].get('PASSWORD'):
             DATABASES['default']['PASSWORD'] = unquote(DATABASES['default']['PASSWORD'])
-            DATABASES['OPTIONS']['timezone'] = 'UTC'
-            DATABASES['OPTIONS']['client_encoding'] = 'UTF8'
-
 
 SITES_DIR = os.path.join(os.path.dirname(__file__), '..', 'sites').replace('\\','/')
 SITES_PACKAGE = 'sites'
