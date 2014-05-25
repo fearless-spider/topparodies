@@ -39,7 +39,7 @@ SITE_ID = 1
 SECRET_KEY = '!g&ebi%&pu$3fmh_@aax#*tnn0)$fom#yay8u!3+93z721qby6'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 TEMPLATE_DEBUG = True
 
