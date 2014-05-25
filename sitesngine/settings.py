@@ -70,6 +70,7 @@ INSTALLED_APPS = (
     'django.contrib.comments',
     'sites.topparodies_com',
     'sites.mobilebrand_pl',
+    'sites.djangostdio_com',
     'sitesngine.hosts',
     'mptt',
     'sitesngine.elfinder',
