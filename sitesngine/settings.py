@@ -205,6 +205,17 @@ XMLRPC_METHODS = ZINNIA_XMLRPC_METHODS
 
 USE_TINYMCE = True
 
+# -*- coding: utf-8 -*-
+DEPLOYMENT_MODE = 'dev'
+COMPRESS_REVISION_NUMBER = '1.0'
+
+BLOG_PLATFORM = 'tumblr'  # Wordpress or tumblr
+
+#Blog Integration: Tumblr
+TUMBLR_BLOG_URL = 'fearlessspider.tumblr.com'
+TUMBLR_API_URL = 'http://api.tumblr.com/v2/blog/{0}'.format(TUMBLR_BLOG_URL)
+TUMBLR_API_KEY = 'rDjHObC8MGIN4HnpYyQhEkEMowLD9Lby0uRPZGUTVCabLhX910'
+
 TWITTER_INTEGRATION_ENABLED = True
 GITHUB_OAUTH_ENABLED = True
 GITHUB_INTEGRATION_ENABLED = True
