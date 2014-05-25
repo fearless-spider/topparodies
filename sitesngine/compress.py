@@ -6,7 +6,7 @@ import subprocess
 import shlex
 import traceback
 
-PATH_TO_HERE = '..'
+PATH_TO_HERE = '../'
 #sys.path.append(os.path.join('..',PATH_TO_HERE))
 os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
 
