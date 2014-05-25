@@ -235,3 +235,6 @@ FLICKR_INTEGRATION_ENABLED = False
 LINKEDIN_INTEGRATION_ENABLED = True
 SITEMAP_ENABLED = True
 SITE_ROOT_URI = 'http://www.fearlessspider.com'
+#RSS Feed Integration: (by default use Tumblr rss feed)
+RSS_FEED_ENABLED = True
+RSS_FEED_URL = 'http://{0}/rss'.format(TUMBLR_BLOG_URL)
