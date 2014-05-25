@@ -206,7 +206,7 @@ XMLRPC_METHODS = ZINNIA_XMLRPC_METHODS
 USE_TINYMCE = True
 
 # -*- coding: utf-8 -*-
-DEPLOYMENT_MODE = 'dev'
+DEPLOYMENT_MODE = 'prod'
 COMPRESS_REVISION_NUMBER = '1.0'
 
 BLOG_PLATFORM = 'tumblr'  # Wordpress or tumblr
