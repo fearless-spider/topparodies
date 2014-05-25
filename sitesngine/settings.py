@@ -137,10 +137,6 @@ DATABASES = {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     },
-    'OPTIONS': {
-        'timezone': 'UTC',
-        'client_encoding': 'UTF8',
-    },
 }
 
 # Static files (CSS, JavaScript, Images)
