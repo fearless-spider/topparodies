@@ -52,6 +52,8 @@ ALLOWED_HOSTS = [
     'mobilebrand.pl',
     'www.fearlessspider.com',
     'fearlessspider.com',
+    'www.djangostdio.com',
+    'djangostdio.com',
 ]
 
 
@@ -170,6 +172,8 @@ DEFAULT_HOST = 'sitesngine.megiteam.pl'
 HOSTNAME_REDIRECTS = {
     'mobilebrand.pl': 'www.mobilebrand.pl',
     'topparodies.com': 'www.topparodies.com',
+    'fearlessspider.com': 'www.fearlessspider.com',
+    'djangostdio.com': 'www.djangostdio.com',
 }
 #ENV_HOSTNAMES = {
 #    'django':    'djangoaaa',
