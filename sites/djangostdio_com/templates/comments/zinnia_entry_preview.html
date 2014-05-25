@@ -1,0 +1,38 @@
+{% extends "zinnia/base.html" %}
+{% load i18n zinnia_tags comments %}
+
+{% block title %}{% trans "Comment preview" %}{% endblock %}
+
+{% block body-class %}comment-preview{% endblock %}
+
+{% block content %}
+  {% if form.errors %}
+  <h2>{% blocktrans count errors=form.errors|length %}Please correct following error.{% plural %}Please correct following errors.{% endblocktrans %}</h2>
+  {% else %}
+  <h2>{% trans "Preview of the comment" %}</h2>
+    <ul class="media-list" id="comment-list">
+    {% with comment=form.get_comment_object %}
+    <li id="comment-preview" class="media comment vcard box1">
+      <div class="pull-left"><img src="{% get_gravatar comment.email 60 "G" %}"
+           class="media-object gravatar photo" alt="{{ comment.name }}" /></div>
+      <div class="media-body comment-info">
+      <h4 class="media-heading">
+	{% if comment.url %}
+	<a href="{{ comment.url }}" rel="external nofollow"
+           class="fn url">{{ comment.name }}</a>
+	{% else %}
+	{{ comment.name }}
+	{% endif %}
+      </h4>
+	{% trans "on" %}
+        <abbr class="comment-published" title="{{ comment.submit_date|date:"c" }}">
+          {{ comment.submit_date|date:"SHORT_DATETIME_FORMAT" }}
+        </abbr>
+      {{ comment.comment|linebreaks }}
+      </div>
+    </li>
+    {% endwith %}
+  </ul>
+  {% endif %}
+  {% include "comments/zinnia/entry/form.html" %}
+{% endblock %}

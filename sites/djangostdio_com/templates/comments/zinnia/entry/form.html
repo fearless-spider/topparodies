@@ -1,0 +1,45 @@
+{% load comments i18n %}
+{% load url from future %}
+<form action="{% comment_form_target %}" method="post" id="comment-form" class="well form-horizontal">
+  {% csrf_token %}
+  <fieldset>
+    <legend>{% trans "Post your comment" %}</legend>
+    <input type="hidden" name="next" value="{% url 'zinnia_comment_success' %}"/>
+    {% for field in form %}
+    {% if field.is_hidden %}{{ field }}{% else %}
+    {% if user.is_authenticated and field.name in "namemailurl" %}{% else %}
+    <div class="form-group {% if field.errors %}alert alert-error{% endif %}"{% ifequal field.name "honeypot" %} style="display:none;"{% endifequal %}>
+      <label class="control-label col-lg-4">{{ field.label }}</label>
+        <div class="col-lg-8">
+          {{ field }}
+            <span class="help-inline">
+        {% if field.errors %}{{ field.errors }}{% endif %}
+            </span>
+        </div>
+    </div>
+    {% endif %}
+    {% endif %}
+    {% endfor %}
+    {% if user.is_authenticated %}
+    <p class="auth">
+      {% trans "Comment as" %} <strong>{% firstof user.get_full_name user.username %}</strong>. <a href="{% url 'admin:logout' %}">{% trans "Log out" %}</a>.
+    </p>
+    {% endif %}
+    <div class="submit form-group">
+        <div class="col-lg-offset-4 col-lg-8">
+            <input type="submit" name="preview" class="submit-preview btn btn-default" value="{% trans "Preview" %}" />
+            <input type="submit" name="submit" class="submit-post btn btn-primary" value="{% trans "Post" %}" />
+        </div>
+    </div>
+  </fieldset>
+</form>
+<script>
+    if (document.getElementById("id_name") != undefined)
+        document.getElementById("id_name").className += " form-control";
+    if (document.getElementById("id_email") != undefined)
+        document.getElementById("id_email").className += " form-control";
+    if (document.getElementById("id_url") != undefined)
+        document.getElementById("id_url").className += " form-control";
+    if (document.getElementById("id_comment") != undefined)
+        document.getElementById("id_comment").className += " form-control";
+</script>
