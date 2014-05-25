@@ -7,7 +7,7 @@ import shlex
 import traceback
 
 PATH_TO_HERE = os.path.abspath(os.path.dirname(__file__))
-os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
+os.environ['DJANGO_SETTINGS_MODULE'] = 'sitesngine.settings'
 
 from django.conf import settings
 
