@@ -1,11 +1,9 @@
-"""Django Sites N-gine Pages permissions management using django-authority."""
+"""Django page CMS permissions management using django-authority."""
 
 import authority
 
 from sitesngine.pages.models import Page
 from sitesngine.pages import settings
-
-__author__ = 'fearless'  # "from birth till death"
 
 permission_checks = []
 for perm_lang in settings.SITESNGINE_PAGE_LANGUAGES:
@@ -82,6 +80,5 @@ class PagePermission(authority.permissions.BasePermission):
 
         # everything else failed, no permissions
         return False
-
 
 authority.register(Page, PagePermission)

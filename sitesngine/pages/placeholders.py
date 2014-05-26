@@ -1,9 +1,8 @@
 """Placeholder module, that's where the smart things happen."""
-
-import logging
-import os
-import time
-import re
+from sitesngine.pages.widgets_registry import get_widget
+from sitesngine.pages import settings
+from sitesngine.pages.models import Content
+from sitesngine.pages.widgets import ImageInput, FileInput
 
 from django import forms
 from django.core.mail import send_mail
@@ -17,17 +16,18 @@ from django.utils.translation import ugettext_lazy as _
 from django.utils.safestring import mark_safe
 from django.utils.text import unescape_string_literal
 from django.template.loader import render_to_string
+from django.template import RequestContext
+from django.core.files.uploadedfile import UploadedFile
+import logging
+import os
+import time
+import re
+import six
 
-from sitesngine.pages.widgets_registry import get_widget
-from sitesngine.pages import settings
-from sitesngine.pages.models import Content
-from sitesngine.pages.widgets import ImageInput, VideoWidget, FileInput
-
-
-__author__ = 'fearless'  # "from birth till death"
+logging.basicConfig()
+logger = logging.getLogger("pages")
 
 PLACEHOLDER_ERROR = _("[Placeholder %(name)s had syntax error: %(error)s]")
-logger = logging.getLogger(__name__)
 
 
 def parse_placeholder(parser, token):
@@ -56,7 +56,7 @@ def parse_placeholder(parser, token):
         if bit in param_options:
             if len(remaining) < 2:
                 raise TemplateSyntaxError(
-                    "Placeholder option '%s' need a parameter" % bit)
+                "Placeholder option '%s' need a parameter" % bit)
             if bit == 'as':
                 params['as_varname'] = remaining[1]
             if bit == 'with':
@@ -100,7 +100,7 @@ class PlaceholderNode(template.Node):
     widget = TextInput
 
     def __init__(self, name, page=None, widget=None, parsed=False,
-                 as_varname=None, inherited=False, untranslated=False, has_revision=True):
+            as_varname=None, inherited=False, untranslated=False, has_revision=True):
         """Gather parameters for the `PlaceholderNode`.
 
         These values should be thread safe and don't change between calls."""
@@ -118,9 +118,8 @@ class PlaceholderNode(template.Node):
     def get_widget(self, page, language, fallback=Textarea):
         """Given the name of a placeholder return a `Widget` subclass
         like Textarea or TextInput."""
-        is_str = type(self.widget) == type(str())
-        is_unicode = type(self.widget) == type(unicode())
-        if is_str or is_unicode:
+        is_str = isinstance(self.widget, six.string_types)
+        if is_str:
             widget = get_widget(self.widget)
         else:
             widget = self.widget
@@ -136,7 +135,7 @@ class PlaceholderNode(template.Node):
         saved in the admin and passed to the placeholder save
         method."""
         result = {}
-        for key in data.keys():
+        for key in list(data.keys()):
             if key.startswith(self.name + '-'):
                 new_key = key.replace(self.name + '-', '')
                 result[new_key] = data[key]
@@ -150,7 +149,7 @@ class PlaceholderNode(template.Node):
             help_text = ''
         widget = self.get_widget(page, language)
         return self.field(widget=widget, initial=initial,
-                          help_text=help_text, required=False)
+                    help_text=help_text, required=False)
 
     def save(self, page, language, data, change, extra_data=None):
         """Actually save the placeholder data into the Content object."""
@@ -162,8 +161,8 @@ class PlaceholderNode(template.Node):
         # the page is being changed
         if change:
             # we need create a new content if revision is enabled
-            if (settings.SITESNGINE_PAGE_CONTENT_REVISION and self.name
-            not in settings.SITESNGINE_PAGE_CONTENT_REVISION_EXCLUDE_LIST):
+            if(settings.SITESNGINE_PAGE_CONTENT_REVISION and self.name
+                not in settings.SITESNGINE_PAGE_CONTENT_REVISION_EXCLUDE_LIST):
                 Content.objects.create_content_if_changed(
                     page,
                     language,
@@ -191,11 +190,11 @@ class PlaceholderNode(template.Node):
             lang = settings.SITESNGINE_PAGE_DEFAULT_LANGUAGE
             lang_fallback = False
         content = Content.objects.get_content(page_obj, lang, self.name,
-                                              lang_fallback)
+            lang_fallback)
         if self.inherited and not content:
             for ancestor in page_obj.get_ancestors():
                 content = Content.objects.get_content(ancestor, lang,
-                                                      self.name, lang_fallback)
+                    self.name, lang_fallback)
                 if content:
                     break
         return content
@@ -227,7 +226,7 @@ class PlaceholderNode(template.Node):
             try:
                 t = template.Template(content, name=self.name)
                 content = mark_safe(t.render(context))
-            except TemplateSyntaxError, error:
+            except TemplateSyntaxError as error:
                 if global_settings.DEBUG:
                     content = PLACEHOLDER_ERROR % {
                         'name': self.name,
@@ -243,12 +242,14 @@ class PlaceholderNode(template.Node):
     def __repr__(self):
         return "<Placeholder Node: %s>" % self.name
 
-
 def get_filename(page, placeholder, data):
+    """
+    Generate a stable filename using the orinal filename.
+    """
     filename = os.path.join(
         settings.SITESNGINE_PAGE_UPLOAD_ROOT,
         'page_' + str(page.id),
-        placeholder.name + '-' + str(time.time()) + '-' + str(data)
+        placeholder.name + '-' + str(time.time()) + '-' + data.name
     )
     return filename
 
@@ -280,7 +281,7 @@ class ImagePlaceholderNode(PlaceholderNode):
         filename = ''
         if change and data:
             # the image URL is posted if not changed
-            if type(data) is unicode:
+            if not isinstance(data, UploadedFile):
                 return
 
             filename = get_filename(page, self, data)
@@ -291,7 +292,6 @@ class ImagePlaceholderNode(PlaceholderNode):
                 filename,
                 change
             )
-
 
 class FilePlaceholderNode(PlaceholderNode):
     """A `PlaceholderNode` that saves one file on disk.
@@ -320,7 +320,7 @@ class FilePlaceholderNode(PlaceholderNode):
         filename = ''
         if change and data:
             # the image URL is posted if not changed
-            if type(data) is unicode:
+            if not isinstance(data, UploadedFile):
                 return
 
             filename = get_filename(page, self, data)
@@ -334,11 +334,14 @@ class FilePlaceholderNode(PlaceholderNode):
 
 
 class ContactForm(forms.Form):
+    """
+    Simple contact form
+    """
     email = forms.EmailField(label=_('Your email'))
-    subject = forms.CharField(label=_('Subject'),
-                              max_length=150)
+    subject = forms.CharField(label=_('Subject'), 
+      max_length=150)
     message = forms.CharField(widget=forms.Textarea(),
-                              label=_('Your message'))
+      label=_('Your message'))
 
 
 class ContactPlaceholderNode(PlaceholderNode):
@@ -355,48 +358,43 @@ class ContactPlaceholderNode(PlaceholderNode):
                 data = form.cleaned_data
                 recipients = [adm[1] for adm in global_settings.ADMINS]
                 try:
-                    send_mail(data['subject'], data['message'],
-                              data['email'], recipients, fail_silently=False)
+                    send_mail(data['subject'], data['message'], 
+                        data['email'], recipients, fail_silently=False)
                     return _("Your email has been sent. Thank you.")
                 except:
                     return _("An error as occured: your email has not been sent.")
         else:
             form = ContactForm()
-        renderer = render_to_string('sitesngine/pages/contact.html', {'form': form})
+        renderer = render_to_string('pages/contact.html', {'form':form}, 
+            RequestContext(request))
         return mark_safe(renderer)
 
 
-class VideoPlaceholderNode(PlaceholderNode):
-    """A youtube `PlaceholderNode`, just here as an example."""
-
-    widget = VideoWidget
-
-    def render(self, context):
-        content = self.get_content_from_context(context)
-        if not content:
-            return ''
-        if content:
-            video_url, w, h = content.split('\\')
-            m = re.search('youtube\.com\/watch\?v=([^&]+)', content)
-            if m:
-                video_url = 'http://www.youtube.com/v/' + m.group(1)
-            if not w:
-                w = 425
-            if not h:
-                h = 344
-            context = {'video_url': video_url, 'w': w, 'h': h}
-            renderer = render_to_string('sitesngine/pages/embed.html', context)
-            return mark_safe(renderer)
-        return ''
-
-
 class JsonPlaceholderNode(PlaceholderNode):
+    """
+    A `PlaceholderNode` that try to return a deserialized JSON object
+    in the template.
+    """
+
     def get_render_content(self, context):
         import json
-
         content = self.get_content_from_context(context)
         try:
             return json.loads(str(content))
         except:
-            logger.error("Problem decoding json")
+            logger.warning("Problem decoding json")
         return content
+
+
+class MarkdownPlaceholderNode(PlaceholderNode):
+    """
+    A `PlaceholderNode` that return HTML from MarkDown format
+    """
+
+    widget = Textarea
+
+    def render(self, context):
+        """Render markdown."""
+        import markdown
+        content = self.get_content_from_context(context)
+        return markdown.markdown(content)

@@ -1,18 +1,16 @@
 # -*- coding: utf-8 -*-
-from django.shortcuts import get_object_or_404
-from django.http import HttpResponse, Http404, HttpResponseRedirect
-from django.contrib.admin.views.decorators import staff_member_required
-from django.views.decorators.csrf import csrf_exempt
-
+"""Pages admin views"""
 from sitesngine.pages import settings
 from sitesngine.pages.models import Page, Content
 from sitesngine.pages.utils import get_placeholders
-from sitesngine.pages.http import auto_render, get_language_from_request
+from sitesngine.pages.phttp import get_language_from_request
 from sitesngine.pages.permissions import PagePermission
 
-
-__author__ = 'fearless'  # "from birth till death"
-
+from django.shortcuts import get_object_or_404, render_to_response
+from django.template import RequestContext
+from django.http import HttpResponse, Http404, HttpResponseRedirect
+from django.contrib.admin.views.decorators import staff_member_required
+from django.views.decorators.csrf import csrf_exempt
 
 @csrf_exempt
 def change_status(request, page_id):
@@ -23,13 +21,11 @@ def change_status(request, page_id):
     if perm and request.method == 'POST':
         page = Page.objects.get(pk=page_id)
         page.status = int(request.POST['status'])
+        page.invalidate()
         page.save()
-        return HttpResponse(unicode(page.status))
+        return HttpResponse(str(page.status))
     raise Http404
-
-
 change_status = staff_member_required(change_status)
-
 
 def list_pages_ajax(request, invalid_move=False):
     """Render pages table for ajax function."""
@@ -38,23 +34,21 @@ def list_pages_ajax(request, invalid_move=False):
     perms = PagePermission(request.user)
     context = {
         'can_publish': perms.check('publish'),
-        'invalid_move': invalid_move,
+        'invalid_move':invalid_move,
         'language': language,
         'pages': pages,
     }
-    return "admin/sitesngine/pages/page/change_list_table.html", context
-
-
+    return render_to_response("admin/pages/page/change_list_table.html", 
+        context,
+        context_instance=RequestContext(request))
 list_pages_ajax = staff_member_required(list_pages_ajax)
-list_pages_ajax = auto_render(list_pages_ajax)
-
 
 @csrf_exempt
 def modify_content(request, page_id, content_type, language_id):
     """Modify the content of a page."""
     page = get_object_or_404(Page, pk=page_id)
     perm = PagePermission(request.user).check('change', page=page,
-                                              lang=language_id, method='POST')
+            lang=language_id, method='POST')
     if perm and request.method == 'POST':
         content = request.POST.get('content', False)
         if not content:
@@ -72,16 +66,13 @@ def modify_content(request, page_id, content_type, language_id):
 
         return HttpResponse('ok')
     raise Http404
-
-
 modify_content = staff_member_required(modify_content)
-
 
 @csrf_exempt
 def delete_content(request, page_id, language_id):
     page = get_object_or_404(Page, pk=page_id)
     perm = PagePermission(request.user).check('delete', page=page,
-                                              lang=language_id, method='POST')
+            lang=language_id, method='POST')
     if not perm:
         raise Http404
 
@@ -89,12 +80,9 @@ def delete_content(request, page_id, language_id):
         c.delete()
 
     destination = request.REQUEST.get('next', request.META.get('HTTP_REFERER',
-                                                               '/admin/pages/page/%s/' % page_id))
+        '/admin/pages/page/%s/' % page_id))
     return HttpResponseRedirect(destination)
-
-
 delete_content = staff_member_required(delete_content)
-
 
 def traduction(request, page_id, language_id):
     """Traduction helper."""
@@ -105,27 +93,19 @@ def traduction(request, page_id, language_id):
         Content.objects.get_content(page, language_id, "title")
         is None
     )
-    return 'sitesngine/pages/traduction_helper.html', {
-        'page': page,
-        'lang': lang,
-        'language_error': language_error,
-        'placeholders': placeholders,
-    }
-
-
+    return render_to_response('pages/traduction_helper.html', {
+        'page':page,
+        'lang':lang,
+        'language_error':language_error,
+        'placeholders':placeholders,
+    }, context_instance=RequestContext(request))
 traduction = staff_member_required(traduction)
-traduction = auto_render(traduction)
-
 
 def get_content(request, page_id, content_id):
     """Get the content for a particular page"""
     content = Content.objects.get(pk=content_id)
     return HttpResponse(content.body)
-
-
 get_content = staff_member_required(get_content)
-get_content = auto_render(get_content)
-
 
 @csrf_exempt
 def move_page(request, page_id, extra_context=None):
@@ -144,10 +124,8 @@ def move_page(request, page_id, extra_context=None):
             # to display this message
             # _('Page could not been moved.')
         else:
-            page.invalidate()
-            target.invalidate()
+            # move_to invalidates cache on a model level
             from mptt.exceptions import InvalidMove
-
             invalid_move = False
             try:
                 page.move_to(target, position)
@@ -156,7 +134,6 @@ def move_page(request, page_id, extra_context=None):
             return list_pages_ajax(request, invalid_move)
     return HttpResponseRedirect('../../')
 
-
 def sub_menu(request, page_id):
     """Render the children of the requested page with the sub_menu
     template."""
@@ -164,13 +141,10 @@ def sub_menu(request, page_id):
     pages = page.children.all()
     page_languages = settings.SITESNGINE_PAGE_LANGUAGES
     perms = PagePermission(request.user)
-    return "admin/sitesngine/pages/page/sub_menu.html", {
+    return render_to_response("admin/pages/page/sub_menu.html", {
         'can_publish': perms.check('publish'),
-        'page': page,
-        'pages': pages,
-        'page_languages': page_languages,
-    }
-
-
+        'page':page,
+        'pages':pages,
+        'page_languages':page_languages,
+    },        context_instance=RequestContext(request))
 sub_menu = staff_member_required(sub_menu)
-sub_menu = auto_render(sub_menu)

@@ -1,12 +1,11 @@
+"""Django page CMS widget registry."""
 __all__ = ('register_widget',)
 from django.utils.translation import ugettext as _
-
-__author__ = 'fearless'  # "from birth till death"
 
 
 class WidgetAlreadyRegistered(Exception):
     """
-    An attempt was made to register a widget for Django Sites N-gine Pages more
+    An attempt was made to register a widget for Django page CMS more
     than once.
     """
     pass
@@ -17,7 +16,6 @@ class WidgetNotFound(Exception):
     The requested widget was not found
     """
     pass
-
 
 registry = []
 

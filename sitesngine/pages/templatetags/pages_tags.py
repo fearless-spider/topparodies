@@ -1,19 +1,16 @@
-"""Django Sites N-gine Pages page_tags template tags"""
-import urllib
-
+"""Page CMS page_tags template tags"""
 from django import template
-from django.utils.safestring import SafeUnicode
+from django.utils.safestring import SafeText
 from django.template import TemplateSyntaxError
 from django.conf import settings
 
 from sitesngine.pages import settings as pages_settings
 from sitesngine.pages.models import Content, Page
 from sitesngine.pages.placeholders import PlaceholderNode, ImagePlaceholderNode, FilePlaceholderNode
-from sitesngine.pages.placeholders import VideoPlaceholderNode, ContactPlaceholderNode
+from sitesngine.pages.placeholders import ContactPlaceholderNode, MarkdownPlaceholderNode
 from sitesngine.pages.placeholders import JsonPlaceholderNode, parse_placeholder
-
-
-__author__ = 'fearless'  # "from birth till death"
+from six.moves import urllib
+import six
 
 register = template.Library()
 
@@ -23,15 +20,14 @@ def get_page_from_string_or_id(page_string, lang=None):
     if type(page_string) == int:
         return Page.objects.get(pk=int(page_string))
     # if we have a string coming from some templates templates
-    if (isinstance(page_string, SafeUnicode) or
-            isinstance(page_string, unicode)):
+    if (isinstance(page_string, SafeText) or
+        isinstance(page_string, six.string_types)):
         if page_string.isdigit():
             return Page.objects.get(pk=int(page_string))
         return Page.objects.from_path(page_string, lang)
     # in any other case we return the input becasue it's probably
     # a Page object.
     return page_string
-
 
 def _get_content(context, page, content_type, lang, fallback=True):
     """Helper function used by ``PlaceholderNode``."""
@@ -49,7 +45,6 @@ def _get_content(context, page, content_type, lang, fallback=True):
     content = Content.objects.get_content(page, lang, content_type, fallback)
     return content
 
-
 """Filters"""
 
 
@@ -61,9 +56,8 @@ def has_content_in(page, language):
     :param language: the language you want to look at
     """
     return Content.objects.filter(page=page, language=language).count() > 0
-
-
 register.filter(has_content_in)
+
 
 """Inclusion tags"""
 
@@ -81,9 +75,7 @@ def pages_menu(context, page, url='/'):
         children = page.get_children_for_frontend()
         context.update({'children': children, 'page': page})
     return context
-
-
-pages_menu = register.inclusion_tag('sitesngine/pages/menu.html',
+pages_menu = register.inclusion_tag('pages/menu.html',
                                     takes_context=True)(pages_menu)
 
 
@@ -102,9 +94,7 @@ def pages_sub_menu(context, page, url='/'):
         children = root.get_children_for_frontend()
         context.update({'children': children, 'page': page})
     return context
-
-
-pages_sub_menu = register.inclusion_tag('sitesngine/pages/sub_menu.html',
+pages_sub_menu = register.inclusion_tag('pages/sub_menu.html',
                                         takes_context=True)(pages_sub_menu)
 
 
@@ -125,10 +115,8 @@ def pages_siblings_menu(context, page, url='/'):
         children = root.get_children_for_frontend()
         context.update({'children': children, 'page': page})
     return context
-
-
-pages_siblings_menu = register.inclusion_tag('sitesngine/pages/sub_menu.html',
-                                             takes_context=True)(pages_siblings_menu)
+pages_siblings_menu = register.inclusion_tag('pages/sub_menu.html',
+                                    takes_context=True)(pages_siblings_menu)
 
 
 def pages_admin_menu(context, page):
@@ -137,18 +125,16 @@ def pages_admin_menu(context, page):
 
     expanded = False
     if request and "tree_expanded" in request.COOKIES:
-        cookie_string = urllib.unquote(request.COOKIES['tree_expanded'])
+        cookie_string = urllib.parse.unquote(request.COOKIES['tree_expanded'])
         if cookie_string:
             ids = [int(id) for id in
-                   urllib.unquote(request.COOKIES['tree_expanded']).split(',')]
+                urllib.parse.unquote(request.COOKIES['tree_expanded']).split(',')]
             if page.id in ids:
                 expanded = True
     context.update({'expanded': expanded, 'page': page})
     return context
-
-
-pages_admin_menu = register.inclusion_tag('admin/sitesngine/pages/page/menu.html',
-                                          takes_context=True)(pages_admin_menu)
+pages_admin_menu = register.inclusion_tag('admin/pages/page/menu.html',
+                                        takes_context=True)(pages_admin_menu)
 
 
 def show_content(context, page, content_type, lang=None, fallback=True):
@@ -173,31 +159,14 @@ def show_content(context, page, content_type, lang=None, fallback=True):
     :param fallback: use fallback content from other language
     """
     return {'content': _get_content(context, page, content_type, lang,
-                                    fallback)}
-
-
-show_content = register.inclusion_tag('sitesngine/pages/content.html',
+                                                                fallback)}
+show_content = register.inclusion_tag('pages/content.html',
                                       takes_context=True)(show_content)
 
 
-def show_slug_with_level(context, page, lang=None, fallback=True):
-    """Display slug with level by language."""
-    if not lang:
-        lang = context.get('lang', pages_settings.SITESNGINE_PAGE_DEFAULT_LANGUAGE)
-
-    page = get_page_from_string_or_id(page, lang)
-    if not page:
-        return ''
-
-    return {'content': page.slug_with_level(lang)}
-
-
-show_slug_with_level = register.inclusion_tag('sitesngine/pages/content.html',
-                                              takes_context=True)(show_slug_with_level)
-
-
 def show_absolute_url(context, page, lang=None):
-    """Show the url of a page in the right language
+    """
+    Show the url of a page in the right language
 
     Example ::
 
@@ -209,7 +178,7 @@ def show_absolute_url(context, page, lang=None):
 
     Keyword arguments:
     :param page: the page object, slug or id
-    :param lang: the wanted language
+    :param lang: the wanted language \
         (defaults to `settings.PAGE_DEFAULT_LANGUAGE`)
     """
     if not lang:
@@ -221,26 +190,22 @@ def show_absolute_url(context, page, lang=None):
     if url:
         return {'content': url}
     return {'content': ''}
-
-
-show_absolute_url = register.inclusion_tag('sitesngine/pages/content.html',
-                                           takes_context=True)(show_absolute_url)
+show_absolute_url = register.inclusion_tag('pages/content.html',
+                                      takes_context=True)(show_absolute_url)
 
 
 def show_revisions(context, page, content_type, lang=None):
     """Render the last 10 revisions of a page content with a list using
         the ``pages/revisions.html`` template"""
     if (not pages_settings.SITESNGINE_PAGE_CONTENT_REVISION or
-                content_type in pages_settings.SITESNGINE_PAGE_CONTENT_REVISION_EXCLUDE_LIST):
+            content_type in pages_settings.SITESNGINE_PAGE_CONTENT_REVISION_EXCLUDE_LIST):
         return {'revisions': None}
     revisions = Content.objects.filter(page=page, language=lang,
-                                       type=content_type).order_by('-creation_date')
+                                type=content_type).order_by('-creation_date')
     if len(revisions) < 2:
         return {'revisions': None}
     return {'revisions': revisions[0:10]}
-
-
-show_revisions = register.inclusion_tag('sitesngine/pages/revisions.html',
+show_revisions = register.inclusion_tag('pages/revisions.html',
                                         takes_context=True)(show_revisions)
 
 
@@ -262,16 +227,14 @@ def pages_dynamic_tree_menu(context, page, url='/'):
         current_page = context['current_page']
         # if this node is expanded, we also have to render its children
         # a node is expanded if it is the current node or one of its ancestors
-        if (page.tree_id == current_page.tree_id and
-                    page.lft <= current_page.lft and
-                    page.rght >= current_page.rght):
+        if(page.tree_id == current_page.tree_id and
+            page.lft <= current_page.lft and
+            page.rght >= current_page.rght):
             children = page.get_children_for_frontend()
     context.update({'children': children, 'page': page})
     return context
-
-
 pages_dynamic_tree_menu = register.inclusion_tag(
-    'sitesngine/pages/dynamic_tree_menu.html',
+    'pages/dynamic_tree_menu.html',
     takes_context=True
 )(pages_dynamic_tree_menu)
 
@@ -293,27 +256,23 @@ def pages_breadcrumb(context, page, url='/'):
         pages_navigation = page.get_ancestors()
     context.update({'pages_navigation': pages_navigation, 'page': page})
     return context
-
-
 pages_breadcrumb = register.inclusion_tag(
-    'sitesngine/pages/breadcrumb.html',
+    'pages/breadcrumb.html',
     takes_context=True
 )(pages_breadcrumb)
+
 
 """Tags"""
 
 
 class FakeCSRFNode(template.Node):
     """Fake CSRF node for django 1.1.1"""
-
     def render(self, context):
         return ''
 
 
 def do_csrf_token(parser, token):
     return FakeCSRFNode()
-
-
 try:
     from django.views.decorators.csrf import csrf_protect
 except ImportError:
@@ -322,7 +281,6 @@ except ImportError:
 
 class GetPageNode(template.Node):
     """get_page Node"""
-
     def __init__(self, page_filter, varname):
         self.page_filter = page_filter
         self.varname = varname
@@ -353,14 +311,11 @@ def do_get_page(parser, token):
     page_filter = parser.compile_filter(bits[1])
     varname = bits[-1]
     return GetPageNode(page_filter, varname)
-
-
 do_get_page = register.tag('get_page', do_get_page)
 
 
 class GetContentNode(template.Node):
     """Get content node"""
-
     def __init__(self, page, content_type, varname, lang, lang_filter):
         self.page = page
         self.content_type = content_type
@@ -416,14 +371,11 @@ def do_get_content(parser, token):
     else:
         lang_filter = parser.compile_filter("lang")
     return GetContentNode(page, content_type, varname, lang, lang_filter)
-
-
 do_get_content = register.tag('get_content', do_get_content)
 
 
 class LoadPagesNode(template.Node):
     """Load page node."""
-
     def render(self, context):
         if 'pages_navigation' not in context:
             pages = Page.objects.navigation().order_by("tree_id")
@@ -447,8 +399,6 @@ def do_load_pages(parser, token):
         </ul>
     """
     return LoadPagesNode()
-
-
 do_load_pages = register.tag('load_pages', do_load_pages)
 
 
@@ -470,10 +420,15 @@ def do_placeholder(parser, token):
     """
     name, params = parse_placeholder(parser, token)
     return PlaceholderNode(name, **params)
-
-
 register.tag('placeholder', do_placeholder)
 
+def do_markdownlaceholder(parser, token):
+    """
+    Method that parse the markdownplaceholder template tag.
+    """
+    name, params = parse_placeholder(parser, token)
+    return MarkdownPlaceholderNode(name, **params)
+register.tag('markdownplaceholder', do_markdownlaceholder)
 
 def do_imageplaceholder(parser, token):
     """
@@ -481,10 +436,7 @@ def do_imageplaceholder(parser, token):
     """
     name, params = parse_placeholder(parser, token)
     return ImagePlaceholderNode(name, **params)
-
-
 register.tag('imageplaceholder', do_imageplaceholder)
-
 
 def do_fileplaceholder(parser, token):
     """
@@ -492,21 +444,7 @@ def do_fileplaceholder(parser, token):
     """
     name, params = parse_placeholder(parser, token)
     return FilePlaceholderNode(name, **params)
-
-
 register.tag('fileplaceholder', do_fileplaceholder)
-
-
-def do_videoplaceholder(parser, token):
-    """
-    Method that parse the imageplaceholder template tag.
-    """
-    name, params = parse_placeholder(parser, token)
-    return VideoPlaceholderNode(name, **params)
-
-
-register.tag('videoplaceholder', do_videoplaceholder)
-
 
 def do_contactplaceholder(parser, token):
     """
@@ -514,8 +452,6 @@ def do_contactplaceholder(parser, token):
     """
     name, params = parse_placeholder(parser, token)
     return ContactPlaceholderNode(name, **params)
-
-
 register.tag('contactplaceholder', do_contactplaceholder)
 
 
@@ -525,8 +461,6 @@ def do_jsonplaceholder(parser, token):
     """
     name, params = parse_placeholder(parser, token)
     return JsonPlaceholderNode(name, **params)
-
-
 register.tag('jsonplaceholder', do_jsonplaceholder)
 
 
@@ -546,13 +480,11 @@ def language_content_up_to_date(page, language):
         return True
     # get the last modified date for the official version
     last_modified = Content.objects.filter(language=lang_code,
-                                           page=page).order_by('-creation_date')
+        page=page).order_by('-creation_date')
     if not last_modified:
         # no official version
         return True
     lang_modified = Content.objects.filter(language=language,
-                                           page=page).order_by('-creation_date')[0].creation_date
+        page=page).order_by('-creation_date')[0].creation_date
     return lang_modified > last_modified[0].creation_date
-
-
 register.filter(language_content_up_to_date)

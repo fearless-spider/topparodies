@@ -1,25 +1,25 @@
 # -*- coding: utf-8 -*-
-from django.contrib import admin
-from django.utils.translation import ugettext as _
-from django.utils.encoding import force_unicode
-from django.conf import settings as global_settings
-from django.http import Http404
-from django.contrib.admin.sites import AlreadyRegistered
-
+"""Page Admin module."""
 from sitesngine.pages import settings
 from sitesngine.pages.models import Page, Content, PageAlias
-from sitesngine.pages.http import get_language_from_request, get_template_from_request
+from sitesngine.pages.phttp import get_language_from_request, get_template_from_request
 from sitesngine.pages.utils import get_placeholders
 from sitesngine.pages.templatetags.pages_tags import PlaceholderNode
-from sitesngine.pages.admin.utils import get_connected, make_inline_admin
-from sitesngine.pages.admin.forms import PageForm
+from sitesngine.pages.admin.forms import make_form
 from sitesngine.pages.admin.views import traduction, get_content, sub_menu
 from sitesngine.pages.admin.views import list_pages_ajax
 from sitesngine.pages.admin.views import change_status, modify_content, delete_content
 from sitesngine.pages.admin.views import move_page
-from sitesngine.pages.admin.actions import export_pages_as_json, import_pages_from_json
 from sitesngine.pages.permissions import PagePermission
+import sitesngine.pages.widgets
 
+from django.contrib import admin
+from django.utils.translation import ugettext as _, ugettext_lazy
+from django.utils.encoding import force_text
+from django.conf import settings as global_settings
+from django.http import HttpResponseRedirect, Http404
+from django.contrib.admin.util import unquote
+from django.contrib.admin.sites import AlreadyRegistered
 if global_settings.USE_I18N:
     from django.views.i18n import javascript_catalog
 else:
@@ -27,23 +27,47 @@ else:
 
 from os.path import join
 
-__author__ = 'fearless'  # "from birth till death"
+
+from django.db import models
+def create_page_model(placeholders=[]):
+    """
+    Create Page model
+    """
+    app_label='pages'
+    module = 'pages.models.test'
+    class Meta:
+        # Using type('Meta', ...) gives a dictproxy error during model creation
+        pass
+
+    # app_label must be set using the Meta inner class
+    setattr(Meta, 'app_label', app_label)
+
+    # Set up a dictionary to simulate declarations within a class
+    attrs = {'__module__': module, 'Meta': Meta}
+
+    # Add in any fields that were provided
+    for p in placeholders:
+        attrs[p.name] = models.TextField(blank=True)
+    
+    attrs["slug"] = models.TextField()
+    attrs["title"] = models.TextField()
+
+    # Create the class, which automatically triggers ModelBase processing
+    model = type("Page", (Page,), attrs)
+
+    return model
 
 
 class PageAdmin(admin.ModelAdmin):
-    change_list_template = 'admin/sitesngine/pages/page/change_list.html'
-    change_form_template = 'admin/sitesngine/pages/page/change_form.html'
-    sortable_mptt = True
-    sortable_order_field = 'position'
-    form = PageForm
-    exclude = ['author', 'parent']
+    """Page Admin class."""
+
     # these mandatory fields are not versioned
     mandatory_placeholders = ('title', 'slug')
     general_fields = ['title', 'slug', 'status', 'target',
-                      'position', 'freeze_date', 'template', 'language',
-                      'redirect_to', 'redirect_to_url']
+        'position', 'freeze_date', 'template', 'language',
+        'redirect_to', 'redirect_to_url']
 
-    if settings.SITESNGINE_PAGE_USE_SITE_ID and not settings.SITESNGINE_PAGE_HIDE_SITES:
+    if settings.PAGE_USE_SITE_ID and not settings.PAGE_HIDE_SITES:
         general_fields.append('sites')
     insert_point = general_fields.index('status') + 1
 
@@ -51,18 +75,17 @@ class PageAdmin(admin.ModelAdmin):
     # 'page' foreign key in all registered models
     inlines = []
 
-    if settings.SITESNGINE_PAGE_TAGGING:
+    if settings.PAGE_TAGGING:
         general_fields.insert(insert_point, 'tags')
 
     # Add support for future dating and expiration based on settings.
-    if settings.SITESNGINE_PAGE_SHOW_END_DATE:
+    if settings.PAGE_SHOW_END_DATE:
         general_fields.insert(insert_point, 'publication_end_date')
-    if settings.SITESNGINE_PAGE_SHOW_START_DATE:
+    if settings.PAGE_SHOW_START_DATE:
         general_fields.insert(insert_point, 'publication_date')
 
-    from sitesngine.pages.urlconf_registry import registry
-
-    if (len(registry)):
+    from pages.urlconf_registry import registry
+    if(len(registry)):
         general_fields.append('delegate_to')
         insert_point = general_fields.index('status') + 1
 
@@ -75,52 +98,58 @@ class PageAdmin(admin.ModelAdmin):
         }],
     )
 
-    if settings.SITESNGINE_PAGE_EXPORT_ENABLED:
-        actions = [export_pages_as_json]
-
     class Media:
         css = {
-            'all': [join(settings.SITESNGINE_PAGES_MEDIA_URL, path) for path in (
+            'all': [join(settings.PAGES_MEDIA_URL, path) for path in (
                 'css/rte.css',
                 'css/pages.css'
             )]
         }
-        js = [join(settings.SITESNGINE_PAGES_MEDIA_URL, path) for path in (
+        js = [join(settings.PAGES_MEDIA_URL, path) for path in (
             'javascript/jquery.js',
             'javascript/jquery.rte.js',
             'javascript/pages.js',
             'javascript/pages_list.js',
             'javascript/pages_form.js',
+            'javascript/jquery.query-2.1.7.js',
         )]
 
+    @classmethod
+    def add_action(cls, method):
+        if method not in cls.actions:
+            cls.actions.append(method)
+
     def urls(self):
-        from django.conf.urls import patterns, url
+        from django.conf.urls import patterns, url, include
 
         # Admin-site-wide views.
         urlpatterns = patterns('',
-                               url(r'^$', self.list_pages, name='page-index'),
-                               url(r'^(?P<page_id>[0-9]+)/traduction/(?P<language_id>[-\w]+)/$',
-                                   traduction, name='page-traduction'),
-                               url(r'^(?P<page_id>[0-9]+)/get-content/(?P<content_id>[0-9]+)/$',
-                                   get_content, name='page-get-content'),
-                               url(
-                                   r'^(?P<page_id>[0-9]+)/modify-content/(?P<content_type>[-\w]+)/(?P<language_id>[-\w]+)/$',
-                                   modify_content, name='page-modify-content'),
-                               url(r'^(?P<page_id>[0-9]+)/delete-content/(?P<language_id>[-\w]+)/$',
-                                   delete_content, name='page-delete-content'),
-                               url(r'^(?P<page_id>[0-9]+)/sub-menu/$',
-                                   sub_menu, name='page-sub-menu'),
-                               url(r'^(?P<page_id>[0-9]+)/move-page/$',
-                                   move_page, name='page-move-page'),
-                               url(r'^(?P<page_id>[0-9]+)/change-status/$',
-                                   change_status, name='page-change-status'),
+            url(r'^$', self.list_pages, name='page-index'),
+            url(r'^(?P<page_id>[0-9]+)/traduction/(?P<language_id>[-\w]+)/$',
+                traduction, name='page-traduction'),
+            url(r'^(?P<page_id>[0-9]+)/get-content/(?P<content_id>[0-9]+)/$',
+                get_content, name='page-get-content'),
+            url(r'^(?P<page_id>[0-9]+)/modify-content/(?P<content_type>[-\w]+)/(?P<language_id>[-\w]+)/$',
+                modify_content, name='page-modify-content'),
+            url(r'^(?P<page_id>[0-9]+)/delete-content/(?P<language_id>[-\w]+)/$',
+                delete_content, name='page-delete-content'),
+            url(r'^(?P<page_id>[0-9]+)/sub-menu/$',
+                sub_menu, name='page-sub-menu'),
+            url(r'^(?P<page_id>[0-9]+)/move-page/$',
+                move_page, name='page-move-page'),
+            url(r'^(?P<page_id>[0-9]+)/change-status/$',
+                change_status, name='page-change-status'),
         )
-        if settings.SITESNGINE_PAGE_IMPORT_ENABLED:
-            urlpatterns += patterns('',
-                                    url(r'^import-json/$',
-                                        self.import_pages, name='import-pages-from-json'),
-            )
-
+        
+        """for app_name in global_settings.INSTALLED_APPS:
+            try:
+                module_ = __import__(app_name, globals(), locals(), ['object'], -1)
+            except ImportError:
+                continue
+            if hasattr(module_, "PAGE_ADMIN_URLS"):
+                urls = __import__(getattr(module_, "PAGE_ADMIN_URLS"), globals(), locals(), ['object'], -1)
+                urlpatterns += urls.urlpatterns"""
+                
         urlpatterns += super(PageAdmin, self).urls
 
         return urlpatterns
@@ -160,15 +189,15 @@ class PageAdmin(admin.ModelAdmin):
             placeholder = PlaceholderNode(name)
             extra_data = placeholder.get_extra_data(form.data)
             placeholder.save(page, language, data, change,
-                             extra_data=extra_data)
+                extra_data=extra_data)
 
         for placeholder in get_placeholders(page.get_template()):
-            if (placeholder.name in form.cleaned_data and placeholder.name
-            not in self.mandatory_placeholders):
+            if(placeholder.name in form.cleaned_data and placeholder.name
+                    not in self.mandatory_placeholders):
                 data = form.cleaned_data[placeholder.name]
                 extra_data = placeholder.get_extra_data(form.data)
                 placeholder.save(page, language, data, change,
-                                 extra_data=extra_data)
+                    extra_data=extra_data)
 
         page.invalidate()
 
@@ -222,8 +251,14 @@ class PageAdmin(admin.ModelAdmin):
         """Get a :class:`Page <pages.admin.forms.PageForm>` for the
         :class:`Page <pages.models.Page>` and modify its fields depending on
         the request."""
-        form = super(PageAdmin, self).get_form(request, obj, **kwargs)
+        
+        template = get_template_from_request(request, obj)
+        
+        model = create_page_model(get_placeholders(template))
 
+        form = make_form(model)
+
+        # bound the form
         language = get_language_from_request(request)
         form.base_fields['language'].initial = language
         if obj:
@@ -237,10 +272,10 @@ class PageAdmin(admin.ModelAdmin):
         page_templates = settings.get_page_templates()
         if len(page_templates) > 0:
             template_choices = list(page_templates)
-            template_choices.insert(0, (settings.SITESNGINE_PAGE_DEFAULT_TEMPLATE,
-                                        _('Default template')))
+            template_choices.insert(0, (settings.PAGE_DEFAULT_TEMPLATE,
+                    _('Default template')))
             form.base_fields['template'].choices = template_choices
-            form.base_fields['template'].initial = force_unicode(template)
+            form.base_fields['template'].initial = force_text(template)
 
         for placeholder in get_placeholders(template):
             name = placeholder.name
@@ -249,7 +284,7 @@ class PageAdmin(admin.ModelAdmin):
             else:
                 initial = None
             form.base_fields[name] = placeholder.get_field(obj,
-                                                           language, initial=initial)
+                language, initial=initial)
 
         return form
 
@@ -259,15 +294,13 @@ class PageAdmin(admin.ModelAdmin):
         language = get_language_from_request(request)
         extra_context = {
             'language': language,
-            # don't see where it's used
-            #'lang': current_lang,
-            'page_languages': settings.SITESNGINE_PAGE_LANGUAGES,
+            'page_languages': settings.PAGE_LANGUAGES,
         }
         try:
             int(object_id)
         except ValueError:
             raise Http404('The "%s" part of the location is invalid.'
-                          % str(object_id))
+                % str(object_id))
         try:
             obj = self.model.objects.get(pk=object_id)
         except self.model.DoesNotExist:
@@ -279,25 +312,35 @@ class PageAdmin(admin.ModelAdmin):
             template = get_template_from_request(request, obj)
             extra_context['placeholders'] = get_placeholders(template)
             extra_context['traduction_languages'] = [l for l in
-                                                     settings.SITESNGINE_PAGE_LANGUAGES if
-                                                     Content.objects.get_content(obj,
-                                                                                 l[0], "title") and l[0] != language]
+                settings.PAGE_LANGUAGES if Content.objects.get_content(obj,
+                                    l[0], "title") and l[0] != language]
         extra_context['page'] = obj
 
-        return super(PageAdmin, self).change_view(request, object_id,
-                                                  form_url=form_url, extra_context=extra_context)
+        response = super(PageAdmin, self).change_view(request, object_id,
+            form_url=form_url, extra_context=extra_context)
+        if request.method == 'POST' and isinstance(response, HttpResponseRedirect):
+            if '_continue' in request.POST or '_saveasnew' in request.POST or '_addanother' in request.POST:
+                addlanguage = True
+            else:
+                addlanguage = False
+            if addlanguage:
+                from six.moves import urllib
+                splitted = list(urllib.parse.urlparse(response.url))
+                query = urllib.parse.parse_qs(splitted[4])
+                query['language'] = language
+                splitted[4] = urllib.parse.urlencode(query)
+                response = HttpResponseRedirect(urllib.parse.urlunparse(splitted))
+        return response
 
 
     def add_view(self, request, form_url='', extra_context=None):
         """The ``add`` admin view for the :class:`Page <pages.models.Page>`."""
         extra_context = {
             'language': get_language_from_request(request),
-            'page_languages': settings.SITESNGINE_PAGE_LANGUAGES,
+            'page_languages': settings.PAGE_LANGUAGES,
         }
-        template = get_template_from_request(request)
-        #extra_context['placeholders'] = get_placeholders(template)
         return super(PageAdmin, self).add_view(request, form_url,
-                                               extra_context)
+                                                            extra_context)
 
     def has_add_permission(self, request):
         """Return ``True`` if the current user has permission to add a new
@@ -310,13 +353,13 @@ class PageAdmin(admin.ModelAdmin):
         to change the page."""
         lang = get_language_from_request(request)
         return PagePermission(request.user).check('change', page=obj,
-                                                  lang=lang, method=request.method)
+            lang=lang, method=request.method)
 
     def has_delete_permission(self, request, obj=None):
         """Return ``True`` if the current user has permission on the page."""
         lang = get_language_from_request(request)
         return PagePermission(request.user).check('change', page=obj,
-                                                  lang=lang)
+            lang=lang)
 
     def list_pages(self, request, template_name=None, extra_context=None):
         """List root pages"""
@@ -328,17 +371,17 @@ class PageAdmin(admin.ModelAdmin):
 
         if query:
             page_ids = list(set([c.page.pk for c in
-                                 Content.objects.filter(body__icontains=query)]))
+                Content.objects.filter(body__icontains=query)]))
             pages = Page.objects.filter(pk__in=page_ids)
         else:
             pages = Page.objects.root()
-        if settings.SITESNGINE_PAGE_HIDE_SITES:
+        if settings.PAGE_HIDE_SITES:
             pages = pages.filter(sites=global_settings.SITE_ID)
 
         perms = PagePermission(request.user)
         context = {
             'can_publish': perms.check('publish'),
-            'can_import': settings.SITESNGINE_PAGE_IMPORT_ENABLED,
+            'can_import': settings.PAGE_IMPORT_ENABLED,
             'language': language,
             'name': _("page"),
             'pages': pages,
@@ -351,45 +394,6 @@ class PageAdmin(admin.ModelAdmin):
 
         return change_list
 
-    def import_pages(self, request):
-        if not self.has_add_permission(request):
-            return admin.site.login(request)
-
-        return import_pages_from_json(request)
-
-
-class PageAdminWithDefaultContent(PageAdmin):
-    """
-    Fill in values for content blocks from official language
-    if creating a new translation
-    """
-
-    def get_form(self, request, obj=None, **kwargs):
-        form = super(PageAdminWithDefaultContent, self
-        ).get_form(request, obj, **kwargs)
-
-        language = get_language_from_request(request)
-
-        if global_settings.LANGUAGE_CODE == language:
-            # this is the "official" language
-            return form
-
-        if Content.objects.filter(page=obj, language=language).count():
-            return form
-
-        # this is a new page, try to find some default content
-        template = get_template_from_request(request, obj)
-        for placeholder in get_placeholders(template):
-            name = placeholder.name
-            form.base_fields[name] = placeholder.get_field(obj, language,
-                                                           initial=Content.objects.get_content(obj,
-                                                                                               global_settings.LANGUAGE_CODE,
-                                                                                               name))
-        return form
-
-
-for admin_class, model, options in get_connected():
-    PageAdmin.inlines.append(make_inline_admin(admin_class, model, options))
 
 try:
     admin.site.register(Page, PageAdmin)
@@ -402,11 +406,11 @@ class ContentAdmin(admin.ModelAdmin):
     list_filter = ('page',)
     search_fields = ('body',)
 
+#admin.site.register(Content, ContentAdmin)
 
 class AliasAdmin(admin.ModelAdmin):
     list_display = ('page', 'url',)
-    list_editable = ('url', )
-
+    list_editable = ('url',)
 
 try:
     admin.site.register(PageAlias, AliasAdmin)

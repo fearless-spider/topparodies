@@ -1,11 +1,10 @@
+"""Django page CMS urlconf registry."""
 from django.utils.translation import ugettext as _
-
-__author__ = 'fearless'  # "from birth till death"
 
 
 class UrlconfAlreadyRegistered(Exception):
     """
-    An attempt was made to register a urlconf for Django Sites N-gine Pages more
+    An attempt was made to register a urlconf for Django page CMS more
     than once.
     """
 
@@ -14,7 +13,6 @@ class UrlconfNotFound(Exception):
     """
     The requested urlconf was not found
     """
-
 
 registry = []
 

@@ -2,12 +2,14 @@
 """Django haystack `SearchIndex` module."""
 from sitesngine.pages.models import Page
 from sitesngine.pages import settings
-from haystack.indexes import (SearchIndex, CharField, DateTimeField,
-                              RealTimeSearchIndex, Indexable)
 
-__author__ = 'fearless'  # "from birth till death"
+from haystack.indexes import SearchIndex, CharField, DateTimeField, Indexable
 
+# This is obsolete if you use haystack 2.0, use the HAYSTACK_SIGNAL_PROCESSOR
+# setting instead
 if settings.SITESNGINE_PAGE_REAL_TIME_SEARCH:
+    
+    from haystack.indexes import RealTimeSearchIndex
 
     class RealTimePageIndex(RealTimeSearchIndex, Indexable):
         """Search index for pages content."""
@@ -31,6 +33,7 @@ if settings.SITESNGINE_PAGE_REAL_TIME_SEARCH:
             return instance.status == Page.PUBLISHED
 
 else:
+    
     class PageIndex(SearchIndex, Indexable):
         """Search index for pages content."""
         text = CharField(document=True, use_template=True)
@@ -38,7 +41,7 @@ else:
         url = CharField(model_attr='get_absolute_url')
         publication_date = DateTimeField(model_attr='publication_date')
 
-        def index_queryset(self):
+        def index_queryset(self, using=None):
             """Used when the entire index for model is updated."""
             return Page.objects.published()
 

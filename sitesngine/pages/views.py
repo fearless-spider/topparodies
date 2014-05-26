@@ -1,19 +1,15 @@
 """Default example views"""
+from sitesngine.pages import settings
+from sitesngine.pages.models import Page, PageAlias
+from sitesngine.pages.phttp import get_language_from_request, remove_slug
+from sitesngine.pages.urlconf_registry import get_urlconf
+
 from django.http import Http404, HttpResponsePermanentRedirect
 from django.contrib.sitemaps import Sitemap
 from django.core.urlresolvers import resolve, Resolver404
 from django.utils import translation
 from django.shortcuts import render_to_response
 from django.template import RequestContext
-
-from sitesngine.hosts.utils import populate_xheaders
-from sitesngine.pages import settings
-from sitesngine.pages.models import Page, PageAlias
-from sitesngine.pages.http import get_language_from_request, remove_slug
-from sitesngine.pages.urlconf_registry import get_urlconf
-
-
-__author__ = 'fearless'  # "from birth till death"
 
 LANGUAGE_KEYS = [key for (key, value) in settings.SITESNGINE_PAGE_LANGUAGES]
 
@@ -27,7 +23,7 @@ class Details(object):
     """
 
     def __call__(self, request, path=None, lang=None, delegation=True,
-                 **kwargs):
+            **kwargs):
 
         current_page = False
 
@@ -83,14 +79,12 @@ class Details(object):
             if answer:
                 return answer
 
-        # do what the auto_render was used to do.
         if kwargs.get('only_context', False):
             return context
         template_name = kwargs.get('template_name', template_name)
         response = render_to_response(template_name,
-                                      RequestContext(request, context))
+            RequestContext(request, context))
         current_page = context['current_page']
-        populate_xheaders(request, response, Page, current_page.id)
         return response
 
     def resolve_page(self, request, context, is_staff):
@@ -98,7 +92,7 @@ class Details(object):
         path = context['path']
         lang = context['lang']
         page = Page.objects.from_path(path, lang,
-                                      exclude_drafts=(not is_staff))
+            exclude_drafts=(not is_staff))
         if page:
             return page
         # if the complete path didn't worked out properly 
@@ -110,13 +104,13 @@ class Details(object):
             path = remove_slug(path)
             while path is not None:
                 page = Page.objects.from_path(path, lang,
-                                              exclude_drafts=(not is_staff))
+                    exclude_drafts=(not is_staff))
                 # find a match. Is the page delegating?
                 if page:
                     if page.delegate_to:
                         return page
                 path = remove_slug(path)
-
+                
         return None
 
     def resolve_alias(self, request, path, lang):
@@ -152,7 +146,7 @@ class Details(object):
         if lang not in [key for (key, value) in settings.SITESNGINE_PAGE_LANGUAGES]:
             raise Http404
 
-        # We're going to serve Django Sites N-gine Pages in language lang;
+        # We're going to serve CMS pages in language lang;
         # make django gettext use that language too
         if lang and translation.check_for_language(lang):
             translation.activate(lang)
@@ -168,7 +162,7 @@ class Details(object):
         return request.user.is_authenticated() and request.user.is_staff
 
     def extra_context(self, request, context):
-        """Call the PAGE_EXTRA_CONTEXT function if there is one."""
+        """Call the SITESNGINE_PAGE_EXTRA_CONTEXT function if there is one."""
         if settings.SITESNGINE_PAGE_EXTRA_CONTEXT:
             context.update(settings.SITESNGINE_PAGE_EXTRA_CONTEXT())
 
@@ -192,8 +186,7 @@ class Details(object):
         if result:
             view, args, kwargs = result
             kwargs.update(context)
-            # for now the view is called as is. Usage of
-            # the auto_render decorator could simplify a few things.
+            # for now the view is called as is.
             return view(request, *args, **kwargs)
 
 
@@ -217,6 +210,7 @@ class PageSitemap(Sitemap):
 
 
 class PageItemProxy(object):
+
     def __init__(self, page, lang):
         self.page = page
         self.lang = lang
