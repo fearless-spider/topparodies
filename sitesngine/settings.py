@@ -143,11 +143,11 @@ DATABASES = {
         'PASSWORD': '13freakk5',
         'USERNAME': 's_sitesngine',
         'PORT': '3306',
-        'HOST': '10.2.102.113'
+        'HOST': '10.2.102.113',
+        'OPTIONS': {
+            'init_command': 'SET storage_engine=MyISAM',
+        }
     },
-    'OPTIONS': {
-        'init_command': 'SET storage_engine=MyISAM',
-    }
 }
 
 # Static files (CSS, JavaScript, Images)
