@@ -131,7 +131,7 @@ USE_I18N = True
 
 USE_L10N = True
 
-USE_TZ = True
+USE_TZ = False
 
 # Database
 # https://docs.djangoproject.com/en/1.6/ref/settings/#databases
@@ -145,7 +145,7 @@ DATABASES = {
         'PORT': '3306',
         'HOST': '10.2.102.113',
         'OPTIONS': {
-            'init_command': 'SET storage_engine=MyISAM, time_zone="System"',
+            'init_command': 'SET storage_engine=MyISAM',
         }
     },
 }
