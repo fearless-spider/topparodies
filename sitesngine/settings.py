@@ -145,7 +145,7 @@ DATABASES = {
         'PORT': '3306',
         'HOST': '10.2.102.113',
         'OPTIONS': {
-            'init_command': 'SET storage_engine=MyISAM, time_zone="UTC"',
+            'init_command': 'SET storage_engine=MyISAM, time_zone="588"',
         }
     },
 }
