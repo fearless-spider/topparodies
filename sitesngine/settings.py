@@ -138,12 +138,16 @@ USE_TZ = True
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-        'OPTIONS': {
-            'init_command': 'SET storage_engine=MyISAM',
-        }
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 's_sitesngine',
+        'PASSWORD': '13freakk5',
+        'USERNAME': 's_sitesngine',
+        'PORT': '3306',
+        'HOST': '10.2.102.113'
     },
+    'OPTIONS': {
+        'init_command': 'SET storage_engine=MyISAM',
+    }
 }
 
 # Static files (CSS, JavaScript, Images)
@@ -154,24 +158,24 @@ STATIC_URL = '/static/'
 import os
 import os.path
 
-try:
-    import dj_database_url
-    try: # python 2.x
-        from urllib import unquote
-    except ImportError: # python 3.x
-        from urllib.parse import unquote
-except ImportError:
-    pass
-else:
-    try:
-        with open(os.environ['DATABASE_PATH_SITESNGINE'], 'r') as url_file:
-            url = url_file.read()
-    except (IOError, KeyError):
-        pass
-    else:
-        DATABASES['default'] = dj_database_url.parse(url)
-        if DATABASES['default'].get('PASSWORD'):
-            DATABASES['default']['PASSWORD'] = unquote(DATABASES['default']['PASSWORD'])
+#try:
+#    import dj_database_url
+#    try: # python 2.x
+#        from urllib import unquote
+#    except ImportError: # python 3.x
+#        from urllib.parse import unquote
+#except ImportError:
+#    pass
+#else:
+#    try:
+#        with open(os.environ['DATABASE_PATH_SITESNGINE'], 'r') as url_file:
+#            url = url_file.read()
+#    except (IOError, KeyError):
+#        pass
+#    else:
+#        DATABASES['default'] = dj_database_url.parse(url)
+#        if DATABASES['default'].get('PASSWORD'):
+#            DATABASES['default']['PASSWORD'] = unquote(DATABASES['default']['PASSWORD'])
 
 SITES_DIR = os.path.join(os.path.dirname(__file__), '..', 'sites').replace('\\','/')
 SITES_PACKAGE = 'sites'
