@@ -68,6 +68,7 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.comments',
+    'sites.sitesngine_megiteam_pl',
     'sites.mobilebrand_pl',
     'sites.djangostdio_com',
     'sites.fearlessspider_com',
@@ -198,6 +199,36 @@ SITESNGINE_PAGE_TEMPLATES = (
 )
 
 SITESNGINE_PAGE_TINYMCE = True
+
+from elfinder.utils.accesscontrol import fs_standard_access
+ELFINDER_CONNECTOR_OPTION_SETS = {
+    'pdf' : {
+        'roots' : [
+                   {
+                   'id' : 'pdfset',
+                   'driver' : 'elfinder.volumes.filesystem.ElfinderVolumeLocalFileSystem',
+                   'path' : os.path.join(STATIC_ROOT, 'pdf'),
+                   'alias' : 'PDF only',
+                   'URL' : '%spdf/' % STATIC_URL,
+                   'onlyMimes' : ['application/pdf',],
+                   'uploadAllow' : ['application/pdf',],
+                   'uploadDeny' : ['all',],
+                   'uploadMaxSize' : '128m',
+                   'disabled' : ['mkfile', 'archive'],
+                   'accessControl' : fs_standard_access,
+                   'attributes' : [
+                                   {
+                                   'pattern' : r'\.tmb$',
+                                   'read' : True,
+                                   'write': True,
+                                   'hidden' : True,
+                                   'locked' : True
+                                   },
+                                   ],
+                   }
+                   ]
+}
+}
 
 ELFINDER_TINYMCE_PATH_TO_POPUP_JS = STATIC_URL + 'tiny_mce/tiny_mce_popup.js'
 
