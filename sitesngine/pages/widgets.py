@@ -176,3 +176,35 @@ class PageLinkWidget(MultiWidget):
 register_widget(PageLinkWidget)
 
 
+from tinymce import widgets as tinymce_widgets
+
+class TinyMCE(tinymce_widgets.TinyMCE):
+    """TinyMCE widget."""
+    def __init__(self, language=None, attrs=None, mce_attrs=None,
+                                                            **kwargs):
+        self.language = language
+
+        if mce_attrs is None:
+            mce_attrs = {}
+
+        self.mce_attrs = mce_attrs
+        self.mce_attrs.update({
+            'mode': "exact",
+            'theme': "advanced",
+            'width': 640,
+            'height': 400,
+            'theme_advanced_toolbar_location': "top",
+            'theme_advanced_toolbar_align': "left",
+            'file_browser_callback': "elFinderBrowser",
+        })
+        # take into account the default settings, don't allow
+        # the above hard coded ones overriding them
+        self.mce_attrs.update(
+            getattr(settings, 'TINYMCE_DEFAULT_CONFIG', {}))
+        super(TinyMCE, self).__init__(language, attrs, mce_attrs)
+
+    def render(self, name, value, attrs=None, **kwargs):
+        rendered = super(TinyMCE, self).render(name, value, attrs)
+        return rendered + mark_safe(render_to_string(
+                                                 'pages/widgets/tinymce.html'))
+register_widget(TinyMCE)
