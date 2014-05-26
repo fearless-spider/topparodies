@@ -67,7 +67,7 @@ class PageAdmin(admin.ModelAdmin):
         'position', 'freeze_date', 'template', 'language',
         'redirect_to', 'redirect_to_url']
 
-    if settings.PAGE_USE_SITE_ID and not settings.PAGE_HIDE_SITES:
+    if settings.SITESNGINE_PAGE_USE_SITE_ID and not settings.SITESNGINE_PAGE_HIDE_SITES:
         general_fields.append('sites')
     insert_point = general_fields.index('status') + 1
 
@@ -75,16 +75,16 @@ class PageAdmin(admin.ModelAdmin):
     # 'page' foreign key in all registered models
     inlines = []
 
-    if settings.PAGE_TAGGING:
+    if settings.SITESNGINE_PAGE_TAGGING:
         general_fields.insert(insert_point, 'tags')
 
     # Add support for future dating and expiration based on settings.
-    if settings.PAGE_SHOW_END_DATE:
+    if settings.SITESNGINE_PAGE_SHOW_END_DATE:
         general_fields.insert(insert_point, 'publication_end_date')
-    if settings.PAGE_SHOW_START_DATE:
+    if settings.SITESNGINE_PAGE_SHOW_START_DATE:
         general_fields.insert(insert_point, 'publication_date')
 
-    from pages.urlconf_registry import registry
+    from sitesngine.pages.urlconf_registry import registry
     if(len(registry)):
         general_fields.append('delegate_to')
         insert_point = general_fields.index('status') + 1
@@ -100,12 +100,12 @@ class PageAdmin(admin.ModelAdmin):
 
     class Media:
         css = {
-            'all': [join(settings.PAGES_MEDIA_URL, path) for path in (
+            'all': [join(settings.SITESNGINE_PAGES_MEDIA_URL, path) for path in (
                 'css/rte.css',
                 'css/pages.css'
             )]
         }
-        js = [join(settings.PAGES_MEDIA_URL, path) for path in (
+        js = [join(settings.SITESNGINE_PAGES_MEDIA_URL, path) for path in (
             'javascript/jquery.js',
             'javascript/jquery.rte.js',
             'javascript/pages.js',
@@ -272,7 +272,7 @@ class PageAdmin(admin.ModelAdmin):
         page_templates = settings.get_page_templates()
         if len(page_templates) > 0:
             template_choices = list(page_templates)
-            template_choices.insert(0, (settings.PAGE_DEFAULT_TEMPLATE,
+            template_choices.insert(0, (settings.SITESNGINE_PAGE_DEFAULT_TEMPLATE,
                     _('Default template')))
             form.base_fields['template'].choices = template_choices
             form.base_fields['template'].initial = force_text(template)
@@ -294,7 +294,7 @@ class PageAdmin(admin.ModelAdmin):
         language = get_language_from_request(request)
         extra_context = {
             'language': language,
-            'page_languages': settings.PAGE_LANGUAGES,
+            'page_languages': settings.SITESNGINE_PAGE_LANGUAGES,
         }
         try:
             int(object_id)
@@ -312,7 +312,7 @@ class PageAdmin(admin.ModelAdmin):
             template = get_template_from_request(request, obj)
             extra_context['placeholders'] = get_placeholders(template)
             extra_context['traduction_languages'] = [l for l in
-                settings.PAGE_LANGUAGES if Content.objects.get_content(obj,
+                settings.SITESNGINE_PAGE_LANGUAGES if Content.objects.get_content(obj,
                                     l[0], "title") and l[0] != language]
         extra_context['page'] = obj
 
@@ -337,7 +337,7 @@ class PageAdmin(admin.ModelAdmin):
         """The ``add`` admin view for the :class:`Page <pages.models.Page>`."""
         extra_context = {
             'language': get_language_from_request(request),
-            'page_languages': settings.PAGE_LANGUAGES,
+            'page_languages': settings.SITESNGINE_PAGE_LANGUAGES,
         }
         return super(PageAdmin, self).add_view(request, form_url,
                                                             extra_context)
@@ -375,13 +375,13 @@ class PageAdmin(admin.ModelAdmin):
             pages = Page.objects.filter(pk__in=page_ids)
         else:
             pages = Page.objects.root()
-        if settings.PAGE_HIDE_SITES:
+        if settings.SITESNGINE_PAGE_HIDE_SITES:
             pages = pages.filter(sites=global_settings.SITE_ID)
 
         perms = PagePermission(request.user)
         context = {
             'can_publish': perms.check('publish'),
-            'can_import': settings.PAGE_IMPORT_ENABLED,
+            'can_import': settings.SITESNGINE_PAGE_IMPORT_ENABLED,
             'language': language,
             'name': _("page"),
             'pages': pages,
