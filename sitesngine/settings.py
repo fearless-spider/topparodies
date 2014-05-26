@@ -141,7 +141,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 's_sitesngine',
         'PASSWORD': '13freakk5',
-        'USERNAME': 's_sitesngine',
+        'USER': 's_sitesngine',
         'PORT': '3306',
         'HOST': '10.2.102.113',
         'OPTIONS': {
