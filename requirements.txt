@@ -1,0 +1,10 @@
+django
+python-mysql
+django-xmlrpc
+apiclient
+gflags
+httplib2
+uritemplate
+oauth2client
+urllib3
+gunicorn

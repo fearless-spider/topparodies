@@ -3,11 +3,22 @@ from optparse import make_option
 import urlparse
 from django.core.management.base import BaseCommand
 from django.template.defaultfilters import slugify
-import gdata.youtube
-import gdata.youtube.service
+from apiclient.discovery import build
+from apiclient.errors import HttpError
+from oauth2client.tools import argparser
 from parodies.models import Video
 
 __author__ = 'bespider'
+
+
+# Set DEVELOPER_KEY to the API key value from the APIs & auth > Registered apps
+# tab of
+#   https://cloud.google.com/console
+# Please ensure that you have enabled the YouTube Data API for your project.
+DEVELOPER_KEY = "AIzaSyDBYrj89EB0UEVIvVgpPqnB5t2CNdaygxQ"
+YOUTUBE_API_SERVICE_NAME = "youtube"
+YOUTUBE_API_VERSION = "v3"
+
 
 class Command(BaseCommand):
     option_list = BaseCommand.option_list + (
@@ -19,75 +30,55 @@ class Command(BaseCommand):
     help = 'Search parodies on youtube'
 
     def handle(self, **options):
-        print "Start search parodies for " + options.get('time')
+        youtube = build(YOUTUBE_API_SERVICE_NAME, YOUTUBE_API_VERSION,
+                        developerKey=DEVELOPER_KEY)
 
-        time = options.get('time')
-        index = options.get('index')
+        # Call the search.list method to retrieve results matching the specified
+        # query term.
+        search_response = youtube.search().list(
+            q="parody",
+            part="id,snippet",
+            maxResults=50
+        ).execute()
 
-        yt_service = gdata.youtube.service.YouTubeService()
-        query = gdata.youtube.service.YouTubeVideoQuery()
+        videos = []
+        channels = []
+        playlists = []
 
-        query.vq = "parody"
-        query.orderby = "relevance"
-        query.racy = "include"
-        query.start_index = index
-        query.max_results = 50
+        # Add each result to the appropriate list, and then display the lists of
+        # matching videos, channels, and playlists.
+        for search_result in search_response.get("items", []):
+            id = search_result['id']
+            videoId = id.get('videoId', None)
+            if videoId:
+                title = search_result['snippet']['title']
+                slug = slugify(title)
+                published_on = search_result['snippet']['publishedAt']
+                description = search_result['snippet']['description']
+                thumb = search_result['snippet']['thumbnails']['high']['url']
+                parsed_url = "https://www.youtube.com/watch?v="+id.get('videoId')
+                counter = 1
+                rating = 1
 
-        if time:
-            query.time = time
-
-        feed = yt_service.YouTubeQuery(query)
-
-        for entry in feed.entry:
-            parsed_url = urlparse.urlparse(entry.id.text)
-
-            title = "%s" % entry.media.title.text
-            slug = slugify(title)
-            published_on = entry.published.text
-
-            counter = 1
-
-            if hasattr(entry.statistics, 'view_count'):
-                counter = entry.statistics.view_count
-
-            rating = 1
-
-            if hasattr(entry.rating,'average'):
-                rating=entry.rating.average
-
-            if entry.media.description.text:
-                description = entry.media.description.text
-            else:
-                description = ''
-
-            category = "%s" % entry.media.category[0].text
-            tags = "%s" % entry.media.keywords.text
-            page = entry.media.player.url
-            player = entry.GetSwfUrl()
-            duration = entry.media.duration.seconds
-            thumb = entry.media.thumbnail[0].url
-
-            videoid = parsed_url.path.split('/')[3]
-
-            video, created = Video.objects.get_or_create(
-                videoid = videoid,
-                defaults={
-                    'title':title,
-                    'slug':slug,
-                    'published_on':published_on,
-                    'counter':counter,
-                    'rating':rating,
-                    'description':description,
-                    'category':category,
-                    'tags':tags,
-                    'page':page,
-                    'player':player,
-                    'duration':duration,
-                    'thumb':thumb,
-                    'videoid':videoid,
-                }
-            )
-            if not created:
-                video.rating = rating
-                video.counter = counter
-                video.save()
+                video, created = Video.objects.get_or_create(
+                    videoid = videoId,
+                    defaults={
+                        'title':title,
+                        'slug':slug,
+                        'published_on':published_on,
+                        'counter':counter,
+                        'rating':rating,
+                        'description':description,
+                        'category':"",
+                        'tags':"",
+                        'page':"",
+                        'player':parsed_url,
+                        'duration':0,
+                        'thumb':thumb,
+                        'videoid':videoId,
+                    }
+                )
+                if not created:
+                    video.rating = rating
+                    video.counter = counter
+                    video.save()
