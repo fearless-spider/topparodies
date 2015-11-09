@@ -1,5 +1,5 @@
 django
-python-mysql
+mysql-python
 django-xmlrpc
 apiclient
 gflags
